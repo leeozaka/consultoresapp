@@ -1,0 +1,30 @@
+# Copy to terraform.tfvars and fill in real values.
+# terraform.tfvars is git-ignored — NEVER commit it.
+
+# ── Profile ────────────────────────────────────────────────────────────────────
+# dev        → NGINX only, no cert-manager issuer, no headlamp, no argocd
+# staging    → NGINX + cert-manager + issuer
+# production → everything (headlamp + argocd enabled)
+
+profile = "production"
+
+# Individual overrides (leave commented to use profile defaults):
+# enable_headlamp = true
+# enable_argocd   = true
+
+# ── TLS ────────────────────────────────────────────────────────────────────────
+
+letsencrypt_email = "devops@itcorretor.com"
+
+# Provide a Cloudflare token to enable DNS-01 wildcard TLS.
+# Without this, cert-manager falls back to per-host HTTP-01 challenges.
+# cloudflare_api_token = "REPLACE_ME"
+
+# ── ArgoCD (required if enable_argocd = true) ──────────────────────────────────
+
+argocd_hostname              = "argocd.itcorretor.com"
+argocd_repo_url              = "https://github.com/consultores-app/ConsultoresAPP.git"
+argocd_app_path              = "infra/k8s/overlays/production"
+argocd_app_name              = "consultores-prod"
+argocd_target_revision       = "HEAD"
+argocd_destination_namespace = "consultores"

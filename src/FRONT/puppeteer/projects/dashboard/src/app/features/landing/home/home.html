@@ -1,0 +1,270 @@
+<div class="relative z-10">
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/5 backdrop-blur-md border-b border-white/10 transition-colors duration-300">
+    <div class="mx-auto flex items-center justify-between px-6 py-4 max-w-7xl">
+      <a routerLink="/" class="flex items-center gap-2 no-underline group">
+        <span class="text-2xl font-bold tracking-tight text-white transition-colors duration-200 group-hover:text-purple-400 font-display">
+          IT
+        </span>
+        <span class="text-xs font-medium tracking-[0.2em] uppercase text-purple-400 opacity-80 transition-opacity group-hover:opacity-100">
+          Consultor
+        </span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <button type="button"
+                class="bg-transparent border-0 text-sm text-slate-300 hover:text-white cursor-pointer transition-all duration-200"
+                (click)="scrollTo('features')"
+                i18n>Funcionalidades</button>
+        <button type="button"
+                class="bg-transparent border-0 text-sm text-slate-300 hover:text-white cursor-pointer transition-all duration-200"
+                (click)="scrollTo('listings')"
+                i18n>Imóveis</button>
+        <button type="button"
+                class="bg-transparent border-0 text-sm text-slate-300 hover:text-white cursor-pointer transition-all duration-200"
+                (click)="scrollTo('pricing')"
+                i18n>Preços</button>
+        <button type="button"
+                (click)="login()"
+                class="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-purple-600/80 backdrop-blur-sm px-5 py-2.5 text-sm font-semibold text-white cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                i18n>Entrar</button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="relative flex min-h-screen items-center justify-center px-6 pt-20">
+    <div class="relative z-10 mx-auto text-center max-w-4xl">
+      <span class="mb-6 inline-block rounded-full border border-purple-500/30 bg-purple-500/10 backdrop-blur-md px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+            i18n>Plataforma completa para Imobiliárias</span>
+
+      <h1 class="mb-6 leading-[1.1] font-display text-5xl md:text-7xl text-white tracking-tight">
+        <span i18n>Gerencie seus imóveis com</span><br>
+        <span class="text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-500" i18n>inteligência e elegância</span>
+      </h1>
+
+      <p class="mx-auto mb-10 text-lg md:text-xl leading-relaxed text-slate-300 max-w-2xl font-body">
+        Cadastre imóveis, crie portais personalizados para sua marca e
+        controle suas finanças — tudo em um único lugar.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <button type="button"
+                (click)="startSignup()"
+                class="group inline-flex items-center gap-2 rounded-xl border border-white/20 bg-purple-600/80 backdrop-blur-md px-8 py-3.5 text-base font-bold text-white cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-purple-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]"
+                i18n>
+          Comece Grátis
+          <i class="pi pi-arrow-right text-sm transition-transform duration-200 group-hover:translate-x-1"></i>
+        </button>
+        <button type="button"
+                class="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 backdrop-blur-md px-8 py-3.5 text-base font-semibold text-white cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-white/10"
+                (click)="scrollTo('features')"
+                i18n>
+          Ver Funcionalidades
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="relative px-6 py-28">
+    <div class="mx-auto max-w-6xl">
+      <div class="mb-16 text-center">
+        <span class="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-purple-400" i18n>Por que escolher</span>
+        <h2 class="mb-4 font-display text-4xl md:text-5xl text-white tracking-tight" i18n>Tudo que sua imobiliária precisa</h2>
+        <p class="mx-auto text-lg text-slate-400 max-w-2xl font-body" i18n>Uma plataforma completa, de ponta a ponta.</p>
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        @for (feature of features; track feature.title; let i = $index) {
+          <div class="group rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg p-8 transition-all duration-300 hover:-translate-y-1.5 hover:border-purple-500/30 hover:bg-white/10 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]">
+            <div class="mb-5 flex size-12 items-center justify-center rounded-xl bg-purple-500/20 border border-purple-500/20 transition-colors duration-300 group-hover:bg-purple-500/30">
+              <i [class]="feature.icon + ' text-xl text-purple-400'"></i>
+            </div>
+            <h3 class="mb-3 text-lg font-bold text-white font-body">
+              {{ feature.title }}
+            </h3>
+            <p class="text-sm leading-relaxed text-slate-300 font-body">
+              {{ feature.description }}
+            </p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- <section id="listings" class="relative px-6 py-28">
+    <div class="mx-auto max-w-6xl">
+      <div class="mb-16 text-center">
+        <span class="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-purple-400" i18n>Vitrine</span>
+        <h2 class="mb-4 font-display text-4xl md:text-5xl text-white tracking-tight" i18n>Imóveis em Destaque</h2>
+        <p class="mx-auto text-lg text-slate-400 max-w-2xl font-body" i18n>De imobiliárias que confiam na nossa plataforma.</p>
+      </div>
+
+      @if (isLoadingProperties()) {
+        <div class="flex justify-center py-16 text-purple-400">
+          <app-loading-spinner size="lg" />
+        </div>
+      } @else if (featuredProperties().length > 0) {
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          @for (featured of featuredProperties(); track featured.property.id) {
+            <a [href]="portalUrl(featured.tenantSlug, featured.property.id)"
+               class="group overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg transition-all duration-300 hover:-translate-y-1.5 hover:border-purple-500/30 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] no-underline block">
+              <div class="relative aspect-video overflow-hidden">
+                @if (featured.property.images.length > 0) {
+                  <img [src]="featured.property.images[0].mediumUrl || featured.property.images[0].url"
+                       [alt]="featured.property.title"
+                       class="size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                       loading="lazy">
+                } @else {
+                  <div class="flex size-full items-center justify-center bg-white/5">
+                    <i class="pi pi-image text-3xl text-slate-600"></i>
+                  </div>
+                }
+                <span class="absolute top-3 left-3 rounded-lg px-2.5 py-1 text-xs font-bold uppercase bg-purple-600/90 backdrop-blur-sm text-white shadow-lg border border-white/20">
+                  {{ featured.property.listingType }}
+                </span>
+              </div>
+              <div class="p-5">
+                <div class="mb-3 flex items-center gap-2">
+                  @if (featured.tenantLogoUrl) {
+                    <img [src]="featured.tenantLogoUrl" [alt]="featured.tenantName"
+                         class="size-5 rounded-full object-cover ring-1 ring-white/20">
+                  } @else {
+                    <div class="flex size-5 items-center justify-center rounded-full bg-purple-500/30 text-[9px] font-bold text-purple-300 ring-1 ring-white/20">
+                      {{ featured.tenantName.charAt(0) }}
+                    </div>
+                  }
+                  <span class="text-xs text-purple-300/80 font-medium truncate font-body">{{ featured.tenantName }}</span>
+                </div>
+                <h4 class="mb-1 text-base font-bold truncate text-white font-body">
+                  {{ featured.property.title }}
+                </h4>
+                <p class="mb-3 flex items-center gap-1 text-xs text-slate-400 font-body">
+                  <i class="pi pi-map-marker"></i>
+                  {{ featured.property.city }}
+                </p>
+                <div class="flex items-center justify-between">
+                  <app-price-display [price]="featured.property.price" currency="BRL" [listingType]="featured.property.listingType" />
+                  <div class="flex items-center gap-3 text-xs text-slate-400 font-body">
+                    @if (featured.property.bedrooms) {
+                      <span class="flex items-center gap-1">
+                        <i class="pi pi-th-large"></i> {{ featured.property.bedrooms }}
+                      </span>
+                    }
+                    @if (featured.property.areaSqMeters) {
+                      <span>{{ featured.property.areaSqMeters }}m²</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg py-16 text-center transition-colors duration-300 hover:border-white/20">
+          <i class="pi pi-building mb-4 text-4xl text-purple-500/50"></i>
+          <p class="text-base text-slate-400 font-body" i18n>
+            Em breve, imóveis reais de nossos parceiros aparecerão aqui.
+          </p>
+        </div>
+      }
+    </div>
+  </section> -->
+
+  <section id="pricing" class="relative px-6 py-28">
+    <div class="mx-auto max-w-6xl">
+      <div class="mb-16 text-center">
+        <span class="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-purple-400" i18n>Planos</span>
+        <h2 class="mb-4 font-display text-4xl md:text-5xl text-white tracking-tight" i18n>Escolha o plano ideal</h2>
+        <p class="mx-auto text-lg text-slate-400 max-w-2xl font-body" i18n>
+          Comece com o plano que se encaixa na sua operação. Upgrade ou downgrade a qualquer hora.
+        </p>
+      </div>
+
+      @if (isLoadingPlans()) {
+        <div class="flex justify-center py-16 text-purple-400">
+          <app-loading-spinner size="lg" />
+        </div>
+      } @else if (plans().length > 0) {
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          @for (plan of plans(); track plan.id; let i = $index) {
+            <div class="group relative flex flex-col rounded-2xl border p-8 transition-all duration-300 hover:-translate-y-1.5"
+                 [class]="i === 1
+                   ? 'border-purple-500/50 bg-purple-500/10 backdrop-blur-lg shadow-[0_0_40px_rgba(168,85,247,0.2)]'
+                   : 'border-white/10 bg-white/5 backdrop-blur-lg hover:border-purple-500/30 hover:bg-white/10 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]'">
+              @if (i === 1) {
+                <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full border border-purple-400/40 bg-purple-600/90 backdrop-blur-sm px-4 py-1 text-xs font-bold uppercase tracking-widest text-white"
+                      i18n>Popular</span>
+              }
+              <div class="mb-6">
+                <h3 class="mb-2 text-xl font-bold text-white font-display">{{ plan.name }}</h3>
+                <p class="text-sm leading-relaxed text-slate-400 font-body">{{ plan.description }}</p>
+              </div>
+              <div class="mb-8">
+                <span class="text-4xl font-bold text-white font-display">
+                  {{ plan.pricePerMonth | currency:'BRL':'symbol':'1.0-0' }}
+                </span>
+                <span class="text-sm text-slate-400 font-body" i18n>/mês</span>
+              </div>
+              <ul class="mb-8 grow space-y-3">
+                @for (feature of planFeatures(plan); track feature.label) {
+                  <li class="flex items-center gap-3 text-sm text-slate-300 font-body">
+                    <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-purple-500/20">
+                      <i class="pi pi-check text-[10px] text-purple-400"></i>
+                    </span>
+                    {{ feature.label }}
+                  </li>
+                }
+              </ul>
+              <button type="button"
+                      (click)="startSignup(plan.id)"
+                      class="w-full rounded-xl px-5 py-3 text-sm font-bold transition-all duration-300 cursor-pointer"
+                      [class]="i === 1
+                        ? 'bg-purple-600 text-white hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]'
+                        : 'border border-white/20 bg-white/5 text-white hover:bg-white/10'"
+                      i18n>
+                Começar agora
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg py-16 text-center">
+          <i class="pi pi-tag mb-4 text-4xl text-purple-500/50"></i>
+          <p class="text-base text-slate-400 font-body" i18n>Planos disponíveis em breve.</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="relative px-6 py-28">
+    <div class="relative z-10 mx-auto text-center max-w-3xl border border-white/10 bg-white/5 backdrop-blur-xl rounded-3xl p-12 shadow-[0_0_50px_rgba(168,85,247,0.1)]">
+      <h2 class="mb-6 font-display text-4xl md:text-5xl text-white tracking-tight" i18n>Pronto para transformar sua imobiliária?</h2>
+      <p class="mx-auto mb-10 text-lg text-slate-300 max-w-xl font-body" i18n>
+        Crie sua conta em minutos. Sem cartão de crédito, sem compromisso.
+      </p>
+      <button type="button"
+              (click)="startSignup()"
+              class="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-purple-600 px-10 py-4 text-lg font-bold text-white cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-purple-500 hover:shadow-[0_0_40px_rgba(168,85,247,0.5)]"
+              i18n>
+        Comece Agora
+        <i class="pi pi-arrow-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <footer class="border-t border-white/10 bg-black/20 backdrop-blur-md px-6 py-12">
+    <div class="mx-auto flex flex-col items-center justify-between gap-6 md:flex-row max-w-6xl">
+      <div class="flex items-center gap-2">
+        <span class="text-lg font-bold font-display text-purple-400">
+          IT
+        </span>
+        <span class="text-xs tracking-widest text-slate-500">Consultor</span>
+      </div>
+      <p class="text-xs text-slate-500 font-body">
+        &copy; {{ currentYear }} ITConsultor — Todos os direitos reservados.
+      </p>
+      <div class="flex items-center gap-6">
+        <a href="#" class="text-xs text-slate-500 hover:text-slate-300 transition-colors duration-200 no-underline font-body" i18n>Termos</a>
+        <a href="#" class="text-xs text-slate-500 hover:text-slate-300 transition-colors duration-200 no-underline font-body" i18n>Privacidade</a>
+      </div>
+    </div>
+  </footer>
+</div>

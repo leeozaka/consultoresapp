@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-acme
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: tenant-acme
+          command: ["sh", "-c"]
+          args:
+            - >-
+              rm -rf /app/.angular/cache /app/dist/tenant-acme &&
+              npx ng build tenant-acme --configuration docker-dev --watch --poll 1000 &
+              until [ -f /app/dist/tenant-acme/server/server.mjs ]; do sleep 2; done &&
+              node --watch-path /app/dist/tenant-acme /app/dist/tenant-acme/server/server.mjs
+          workingDir: /app
+
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: NODE_OPTIONS
+              value: "--max-old-space-size=3072"
+            - name: PORT
+              value: "4000"
+            - name: SSR_API_ORIGIN
+              value: "http://api:8080"
+            - name: CHOKIDAR_USEPOLLING
+              value: "true"
+            - name: WATCHPACK_POLLING
+              value: "true"
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4000
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 4000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 30
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "1Gi"
+            limits:
+              cpu: "1500m"
+              memory: "4Gi"

@@ -1,0 +1,47 @@
+# Production Redis — requirepass from secret + dangerous commands disabled.
+# Overrides the base StatefulSet's command/args and probes.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  template:
+    spec:
+      containers:
+        - name: redis
+          # Use sh -c to expand $REDIS_PASSWORD at runtime.
+          command: ["sh", "-c"]
+          args:
+            - >-
+              redis-server
+              --dir /data
+              --appendonly yes
+              --save "60" "1"
+              --requirepass "$REDIS_PASSWORD"
+              --rename-command FLUSHALL ""
+              --rename-command DEBUG ""
+              --rename-command CONFIG ""
+              --rename-command REPLICAOF ""
+              --rename-command SLAVEOF ""
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: Redis__Password
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'redis-cli -a "$REDIS_PASSWORD" --no-auth-warning ping'
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'redis-cli -a "$REDIS_PASSWORD" --no-auth-warning ping'
+            initialDelaySeconds: 15
+            periodSeconds: 15

@@ -1,0 +1,417 @@
+@if (isLoading()) {
+  <div class="flex justify-center py-16">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else if (tenant(); as t) {
+  <div class="mb-6">
+    <a routerLink="/admin"
+       class="mb-4 inline-flex items-center gap-1 text-sm no-underline transition-colors"
+       style="color: #64748b">
+      <i class="pi pi-arrow-left text-xs"></i>
+      Voltar
+    </a>
+    <div class="flex flex-wrap items-center gap-3">
+      <h1 class="text-xl font-bold" style="color: #1e293b">{{ t.name }}</h1>
+      <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+            [class]="t.status === 'Active' ? 'bg-green-50 text-green-700' :
+                     t.status === 'Archived' ? 'bg-slate-100 text-slate-500' :
+                     'bg-amber-50 text-amber-700'">
+        {{ t.status | tenantStatus }}
+      </span>
+      @if (t.portalLayoutMode === 'Custom') {
+        <span class="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+              style="background: #dbeafe; color: #1d4ed8">
+          <i class="pi pi-code text-xs"></i>
+          Custom Frontend
+        </span>
+      }
+    </div>
+    <p class="mt-1 text-sm" style="color: #94a3b8">{{ t.slug }}.consultor.app · {{ t.contactEmail }}</p>
+  </div>
+
+  <div class="space-y-6">
+    <!-- Custom Frontend Info (when applicable) -->
+    @if (t.portalLayoutMode === 'Custom') {
+      <div class="overflow-hidden rounded-xl border" style="border-color: #bfdbfe; background: #eff6ff">
+        <div class="flex items-center gap-3 border-b px-6 py-4" style="border-color: #bfdbfe">
+          <div class="flex size-9 shrink-0 items-center justify-center rounded-lg" style="background: #dbeafe">
+            <i class="pi pi-code text-sm" style="color: #1d4ed8"></i>
+          </div>
+          <div>
+            <p class="text-sm font-bold" style="color: #1e40af">Frontend Personalizado</p>
+            <p class="mt-0.5 text-xs" style="color: #3b82f6">
+              Este tenant usa um sub-aplicativo Angular em
+              <code class="font-mono">/features/custom/{{ t.slug }}/</code>
+            </p>
+          </div>
+        </div>
+        <div class="grid gap-4 px-6 py-5 sm:grid-cols-2">
+          @if (t.frontendOrigin) {
+            <div>
+              <p class="mb-1 text-xs font-medium" style="color: #1d4ed8">Frontend Origin</p>
+              <code class="text-xs break-all" style="color: #1e293b">{{ t.frontendOrigin }}</code>
+            </div>
+          }
+          @if (t.customDomain) {
+            <div>
+              <p class="mb-1 text-xs font-medium" style="color: #1d4ed8">Domínio personalizado</p>
+              <a [href]="'https://' + t.customDomain"
+                 target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-1 text-xs font-medium no-underline"
+                 style="color: #1d4ed8">
+                {{ t.customDomain }}
+                <i class="pi pi-external-link text-xs"></i>
+              </a>
+            </div>
+          }
+          <div class="sm:col-span-2">
+            <p class="text-xs" style="color: #1d4ed8">
+              <i class="pi pi-exclamation-triangle mr-1" style="color: #f59e0b"></i>
+              <strong>Atenção:</strong> Alterações de perks/addons sem aviso ao dev responsável
+              poderão causar erros 402 no frontend deste tenant ao invés de esconder features graciosamente.
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Owner + Plan info bar -->
+    <div class="grid gap-4 sm:grid-cols-3">
+      <!-- Owner User -->
+      <div class="rounded-xl border bg-white px-5 py-4" style="border-color: #e2e8f0">
+        <p class="mb-1 text-xs font-medium" style="color: #64748b" i18n>Proprietário</p>
+        @if (ownerUser(); as owner) {
+          <a [routerLink]="['/admin/users', owner.id]"
+             class="inline-flex items-center gap-1 text-sm font-semibold no-underline"
+             style="color: #1d4ed8">
+            {{ owner.firstName }} {{ owner.lastName }}
+            <i class="pi pi-external-link text-xs"></i>
+          </a>
+          <p class="text-xs" style="color: #94a3b8">{{ owner.email }}</p>
+        } @else if (t.ownerUserId) {
+          <p class="text-xs" style="color: #94a3b8">Carregando...</p>
+        } @else {
+          <p class="text-xs" style="color: #94a3b8">Criado pelo SuperAdmin</p>
+        }
+      </div>
+
+      <!-- Current plan -->
+      <div class="rounded-xl border bg-white px-5 py-4" style="border-color: #e2e8f0">
+        <p class="mb-1 text-xs font-medium" style="color: #64748b" i18n>Plano Atual</p>
+        <p class="text-sm font-semibold" style="color: #1e293b">{{ currentPlanName() }}</p>
+        <p class="text-xs" style="color: #94a3b8">{{ t.portalTheme }} theme · {{ t.portalLayoutMode }} layout</p>
+      </div>
+
+      <!-- Payment status -->
+      <div class="rounded-xl border bg-white px-5 py-4" style="border-color: #e2e8f0">
+        <p class="mb-1 text-xs font-medium" style="color: #64748b" i18n>Pagamento</p>
+        <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+              [class]="t.paymentStatus === 'paid' ? 'bg-green-50 text-green-700' :
+                       t.paymentStatus === 'past_due' ? 'bg-red-50 text-red-700' :
+                       'bg-gray-50 text-gray-500'">
+          {{ t.paymentStatus }}
+        </span>
+        @if (t.lastPaymentDate) {
+          <p class="mt-1 text-xs" style="color: #94a3b8" i18n>Último: {{ t.lastPaymentDate | date:'dd/MM/yyyy' }}</p>
+        }
+        @if (t.stripeCustomerId) {
+          <p class="mt-1 text-xs break-all" style="color: #94a3b8">{{ t.stripeCustomerId }}</p>
+        }
+      </div>
+    </div>
+
+    <!-- Tenant Details (Editable by SuperAdmin) -->
+    <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n>Dados do Tenant</h2>
+      <form class="space-y-4" (ngSubmit)="saveDetails()">
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Nome</label>
+            <input type="text" required
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editName()" (ngModelChange)="editName.set($event)" name="editName">
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Slug</label>
+            <input type="text" required
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editSlug()" (ngModelChange)="editSlug.set($event)" name="editSlug">
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>E-mail de Contato</label>
+            <input type="email" required
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editContactEmail()" (ngModelChange)="editContactEmail.set($event)" name="editContactEmail">
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Telefone</label>
+            <input type="tel"
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editContactPhone()" (ngModelChange)="editContactPhone.set($event)" name="editContactPhone">
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Domínio (DNS)</label>
+            <input type="text"
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editCustomDomain()" (ngModelChange)="editCustomDomain.set($event)" name="editCustomDomain"
+                   placeholder="portal.imobiliaria.com.br">
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Próxima Cobrança</label>
+            <input type="date"
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editNextBillingDate()" (ngModelChange)="editNextBillingDate.set($event)" name="editNextBillingDate">
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit"
+                  class="rounded-lg px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+                  style="background: #e11d48"
+                  [disabled]="isSavingDetails()" i18n>
+            @if (isSavingDetails()) { <i class="pi pi-spin pi-spinner mr-1"></i> }
+            Salvar Dados
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Branding -->
+    <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n>Branding</h2>
+      <form class="space-y-4" (ngSubmit)="saveBranding()">
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Nome de Exibição</label>
+            <input type="text"
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="agencyDisplayName()" (ngModelChange)="agencyDisplayName.set($event)" name="displayName">
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Tagline</label>
+            <input type="text"
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="tagline()" (ngModelChange)="tagline.set($event)" name="tagline">
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Cor Primária</label>
+            <div class="flex items-center gap-2">
+              <input type="color"
+                     class="size-10 cursor-pointer rounded border"
+                     style="border-color: #e2e8f0"
+                     [ngModel]="primaryColor()" (ngModelChange)="primaryColor.set($event)" name="primaryColor">
+              <span class="text-xs" style="color: #94a3b8">{{ primaryColor() }}</span>
+            </div>
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Cor Secundária</label>
+            <div class="flex items-center gap-2">
+              <input type="color"
+                     class="size-10 cursor-pointer rounded border"
+                     style="border-color: #e2e8f0"
+                     [ngModel]="secondaryColor()" (ngModelChange)="secondaryColor.set($event)" name="secondaryColor">
+              <span class="text-xs" style="color: #94a3b8">{{ secondaryColor() }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button type="submit"
+                  class="rounded-lg px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+                  style="background: var(--brand-primary, #1A73E8)"
+                  [disabled]="isSavingBranding()" i18n>
+            Salvar Branding
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Entitlements Editor -->
+    <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n>Entitlements</h2>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Max. Imóveis</label>
+          <input type="number" min="0"
+                 class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 [ngModel]="editMaxProperties()" (ngModelChange)="editMaxProperties.set(+$event)" name="maxProperties">
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Tema do Portal</label>
+          <select class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                  style="border-color: #e2e8f0; color: #1e293b"
+                  [ngModel]="editPortalTheme()" (ngModelChange)="editPortalTheme.set($event)" name="portalTheme">
+            @for (opt of portalThemeOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-3 sm:col-span-2 lg:col-span-1">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" class="size-4 rounded"
+                   [ngModel]="editVideoUpload()" (ngModelChange)="editVideoUpload.set($event)" name="videoUpload">
+            <span class="text-sm" style="color: #1e293b" i18n>Upload de Vídeo</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" class="size-4 rounded"
+                   [ngModel]="editAiDescriptions()" (ngModelChange)="editAiDescriptions.set($event)" name="aiDescriptions">
+            <span class="text-sm" style="color: #1e293b" i18n>Descrições com IA</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" class="size-4 rounded"
+                   [ngModel]="editCustomDomainEntitlement()" (ngModelChange)="editCustomDomainEntitlement.set($event)" name="customDomain">
+            <span class="text-sm" style="color: #1e293b" i18n>Domínio Personalizado</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" class="size-4 rounded"
+                   [ngModel]="editPremiumAnalytics()" (ngModelChange)="editPremiumAnalytics.set($event)" name="premiumAnalytics">
+            <span class="text-sm" style="color: #1e293b" i18n>Analytics Premium</span>
+          </label>
+        </div>
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button type="button"
+                class="rounded-lg px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+                style="background: #7c3aed"
+                [disabled]="isSavingEntitlements()"
+                (click)="saveEntitlements()">
+          @if (isSavingEntitlements()) { <i class="pi pi-spin pi-spinner mr-1"></i> }
+          <span i18n>Salvar Entitlements</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Plan Assignment -->
+    <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n>Plano de Assinatura</h2>
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex-1 min-w-48">
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Alterar plano</label>
+          <select class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                  style="border-color: #e2e8f0; color: #1e293b"
+                  [ngModel]="selectedPlanId()" (ngModelChange)="selectedPlanId.set($event)" name="planId">
+            <option value="">— Sem plano —</option>
+            @for (plan of plans(); track plan.id) {
+              <option [value]="plan.id">{{ plan.name }}</option>
+            }
+          </select>
+        </div>
+        <button type="button"
+                class="rounded-lg px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+                style="background: #0f766e"
+                [disabled]="isChangingPlan() || !selectedPlanId()"
+                (click)="changePlan()">
+          @if (isChangingPlan()) { <i class="pi pi-spin pi-spinner mr-1"></i> }
+          <span i18n>Alterar Plano</span>
+        </button>
+      </div>
+      <p class="mt-2 text-xs" style="color: #94a3b8">
+        Esta ação é um override administrativo e não afeta o fluxo de cobrança do Stripe.
+      </p>
+    </div>
+
+    <!-- Tenant Users -->
+    <div class="rounded-xl border bg-white" style="border-color: #e2e8f0">
+      <div class="border-b px-6 py-4" style="border-color: #e2e8f0">
+        <h2 class="text-sm font-bold" style="color: #1e293b" i18n>
+          Usuários do Tenant
+          <span class="ml-2 rounded-full px-2 py-0.5 text-xs font-normal" style="background: #f1f5f9; color: #64748b">
+            {{ tenantUsers().length }}
+          </span>
+        </h2>
+      </div>
+      @if (tenantUsers().length > 0) {
+        <div class="divide-y" style="divide-color: #f1f5f9">
+          @for (user of tenantUsers(); track user.id) {
+            <div class="flex items-center justify-between px-6 py-3">
+              <div>
+                <a [routerLink]="['/admin/users', user.id]"
+                   class="text-sm font-medium no-underline" style="color: #1d4ed8">
+                  {{ user.firstName }} {{ user.lastName }}
+                </a>
+                <p class="text-xs" style="color: #94a3b8">{{ user.email }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                @if (user.roles.length > 0) {
+                  <span class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                        style="background: #dbeafe; color: #1d4ed8">
+                    {{ user.roles[0] }}
+                  </span>
+                }
+                <span class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                      [class]="user.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
+                  {{ user.isActive ? 'Ativo' : 'Inativo' }}
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="px-6 py-8 text-center text-sm" style="color: #94a3b8" i18n>
+          Nenhum usuário neste tenant.
+        </div>
+      }
+    </div>
+
+    <!-- Portal Preview -->
+    <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-sm font-bold" style="color: #1e293b" i18n>Preview do Portal</h2>
+        <a [href]="portalUrl()" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1 text-xs font-medium no-underline"
+           style="color: #1d4ed8">
+          Abrir em nova aba
+          <i class="pi pi-external-link text-xs"></i>
+        </a>
+      </div>
+      <div class="overflow-hidden rounded-lg border" style="border-color: #e2e8f0">
+        <iframe [src]="safePortalUrl()"
+                class="h-72 w-full"
+                sandbox="allow-scripts allow-same-origin"
+                loading="lazy"
+                title="Portal preview">
+        </iframe>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-wrap justify-end gap-3">
+      @if (t.status === 'Pending') {
+        <button type="button"
+                class="rounded-lg px-5 py-2.5 text-sm font-semibold text-white cursor-pointer"
+                style="background: #22c55e"
+                (click)="activateTenant()" i18n>
+          <i class="pi pi-check mr-1"></i>
+          Ativar Tenant
+        </button>
+      }
+      @if (t.status !== 'Archived') {
+        <button type="button"
+                class="rounded-lg border px-5 py-2.5 text-sm font-semibold disabled:opacity-50 cursor-pointer"
+                style="border-color: #fca5a5; color: #dc2626; background: #fff"
+                [disabled]="isArchiving()"
+                (click)="archiveTenant()">
+          @if (isArchiving()) { <i class="pi pi-spin pi-spinner mr-1"></i> }
+          <i class="pi pi-inbox mr-1"></i>
+          Arquivar Tenant
+        </button>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="py-16 text-center">
+    <i class="pi pi-exclamation-triangle mb-4 text-4xl" style="color: #f59e0b"></i>
+    <p class="text-sm" style="color: #64748b" i18n>Tenant não encontrado.</p>
+    <a routerLink="/admin" class="mt-2 inline-block text-sm no-underline" style="color: #e11d48" i18n>Voltar</a>
+  </div>
+}

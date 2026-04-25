@@ -1,0 +1,21 @@
+<span
+  role="status"
+  [attr.aria-label]="label()"
+  class="inline-flex items-center justify-center"
+>
+  <svg [class]="svgClass()" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle
+      class="opacity-20"
+      cx="12" cy="12" r="10"
+      stroke="currentColor"
+      stroke-width="2.5"
+    />
+    <path
+      d="M12 2a10 10 0 0 1 10 10"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+    />
+  </svg>
+  <span class="sr-only">{{ label() }}</span>
+</span>

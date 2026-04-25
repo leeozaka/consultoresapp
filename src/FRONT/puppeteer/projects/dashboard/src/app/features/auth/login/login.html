@@ -1,0 +1,86 @@
+<main class="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-8">
+  <div class="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 sm:p-10 shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden">
+
+    <!-- Decorative glow -->
+    <div class="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/30 rounded-full blur-[60px] pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-pink-500/20 rounded-full blur-[60px] pointer-events-none"></div>
+
+    <div class="relative z-10">
+      <!-- Logo -->
+      <a href="/" class="flex items-center justify-center gap-3 mb-8 no-underline group">
+        <div class="flex size-12 items-center justify-center rounded-xl bg-purple-500/20 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all duration-300 group-hover:scale-105">
+          <i class="pi pi-building text-xl text-purple-400"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-2xl font-bold tracking-tight text-white font-display leading-none">IT</span>
+          <span class="text-[10px] font-medium tracking-[0.2em] uppercase text-purple-400 opacity-80 leading-none mt-1">Consultor</span>
+        </div>
+      </a>
+
+      <h2 class="mb-2 text-center text-2xl font-bold text-white font-display" i18n>Bem-vindo de volta</h2>
+      <p class="mb-8 text-center text-sm text-slate-400 font-body" i18n>Entre com sua conta para acessar o painel.</p>
+
+      <!-- Alert -->
+      @if (errorMessage()) {
+        <div class="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200 backdrop-blur-sm flex items-start gap-3">
+          <i class="pi pi-exclamation-circle mt-0.5 text-red-400"></i>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- LOGIN FORM -->
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="flex flex-col gap-5" autocomplete="on">
+        <div class="flex flex-col gap-1.5">
+          <label for="email" class="text-sm font-medium text-slate-300 ml-1" i18n>E-mail</label>
+          <div class="relative">
+            <i class="pi pi-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input id="email" type="email" formControlName="email" autocomplete="email"
+                   placeholder="voce@empresa.com"
+                   class="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                   [class.border-red-500]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+                   i18n-placeholder />
+          </div>
+          @if (loginForm.controls.email.touched && loginForm.controls.email.hasError('required')) {
+            <small class="text-xs text-red-400 ml-1" i18n>O e-mail é obrigatório.</small>
+          } @else if (loginForm.controls.email.touched && loginForm.controls.email.hasError('email')) {
+            <small class="text-xs text-red-400 ml-1" i18n>Informe um e-mail válido.</small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="password" class="text-sm font-medium text-slate-300 ml-1" i18n>Senha</label>
+          <div class="relative">
+            <i class="pi pi-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10"></i>
+            <input id="password" type="password" formControlName="password" autocomplete="current-password"
+                   placeholder="••••••••"
+                   class="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                   [class.border-red-500]="loginForm.controls.password.touched && loginForm.controls.password.invalid"
+                   i18n-placeholder />
+          </div>
+          @if (loginForm.controls.password.touched && loginForm.controls.password.hasError('required')) {
+            <small class="text-xs text-red-400 ml-1" i18n>A senha é obrigatória.</small>
+          } @else if (loginForm.controls.password.touched && loginForm.controls.password.hasError('minlength')) {
+            <small class="text-xs text-red-400 ml-1" i18n>Mínimo de 8 caracteres.</small>
+          }
+        </div>
+
+        <button type="submit"
+                [disabled]="isSubmitting() || loginForm.invalid"
+                class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-purple-600 disabled:hover:shadow-none cursor-pointer">
+          @if (isSubmitting()) {
+            <i class="pi pi-spin pi-spinner"></i>
+            <span i18n>Autenticando...</span>
+          } @else {
+            <span i18n>Entrar</span>
+            <i class="pi pi-arrow-right"></i>
+          }
+        </button>
+      </form>
+
+      <p class="mt-8 text-center text-sm text-slate-500">
+        <span i18n>Não tem uma conta?</span>
+        <a routerLink="/onboarding/signup" class="ml-1 text-purple-400 hover:text-purple-300 transition-colors font-semibold" i18n>Crie sua agência</a>
+      </p>
+    </div>
+  </div>
+</main>

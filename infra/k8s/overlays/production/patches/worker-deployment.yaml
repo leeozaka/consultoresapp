@@ -1,0 +1,28 @@
+# Production Worker — resource limits and Redis connection string from secret.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: docr-credentials
+      containers:
+        - name: worker
+          imagePullPolicy: Always
+          env:
+            # Override the ConfigMap's ConnectionStrings__Redis with the
+            # password-bearing connection string stored in the secret.
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: ConnectionStrings__Redis
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

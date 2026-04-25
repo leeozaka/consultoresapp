@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: worker
+          command: ["sh", "-c"]
+          args:
+            - >-
+              dotnet restore WORKERS/Homeless.Worker/Homeless.Worker.csproj &&
+              dotnet watch --project WORKERS/Homeless.Worker/Homeless.Worker.csproj run
+              --no-launch-profile
+          workingDir: /src
+
+          env:
+            - name: DOTNET_USE_POLLING_FILE_WATCHER
+              value: "1"
+            - name: DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER
+              value: "1"
+            - name: DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE
+              value: "false"
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits: {}

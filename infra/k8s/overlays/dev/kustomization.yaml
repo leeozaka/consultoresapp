@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: consultores
+
+resources:
+  - ../../base
+  - redisinsight.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - ingress.yaml
+  - ingress-sse.yaml
+  - postgres.yaml
+  - seq.yaml
+  - nodeports.yaml
+  - localstack-init-configmap.yaml
+  - localstack.yaml
+
+patches:
+  - path: patches/api-deployment.yaml
+  - path: patches/dashboard-deployment.yaml
+  - path: patches/tenant-demo-deployment.yaml
+  - path: patches/tenant-acme-deployment.yaml
+  - path: patches/worker-deployment.yaml

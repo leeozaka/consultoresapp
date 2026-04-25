@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Home",
+    "properties": "Properties"
+  },
+  "header": {
+    "tagline": "Find Your Next Property",
+    "subtitle": "Browse our exclusive real estate listings"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "lang": {
+    "en": "EN",
+    "ptBR": "PT"
+  },
+  "properties": {
+    "title": "Properties",
+    "featured": "Featured",
+    "all": "All Properties",
+    "empty": "No properties available at this time.",
+    "loading": "Loading properties...",
+    "sale": "Sale",
+    "rent": "Rent",
+    "both": "Sale & Rent",
+    "bedrooms_one": "{{count}} bed",
+    "bedrooms_other": "{{count}} beds",
+    "bathrooms_one": "{{count}} bath",
+    "bathrooms_other": "{{count}} baths",
+    "parking_one": "{{count}} parking",
+    "parking_other": "{{count}} parking",
+    "area": "{{count}} m²",
+    "viewDetails": "View Details",
+    "filterAll": "All",
+    "filterSale": "For Sale",
+    "filterRent": "For Rent"
+  },
+  "detail": {
+    "backToList": "← All Properties",
+    "notFound": "Property Not Found",
+    "notFoundMessage": "The property you are looking for doesn't exist or has been removed.",
+    "backHome": "← Back to Home",
+    "description": "Description",
+    "details": "Details",
+    "contact": "Contact Agent",
+    "whatsapp": "Chat on WhatsApp",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "parking": "Parking",
+    "area": "Area",
+    "type": "Type",
+    "listing": "Listing",
+    "location": "Location",
+    "price": "Price"
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  },
+  "propertyType": {
+    "House": "House",
+    "Apartment": "Apartment",
+    "Commercial": "Commercial",
+    "Land": "Land",
+    "Garage": "Garage",
+    "Studio": "Studio"
+  },
+  "listingType": {
+    "Sale": "For Sale",
+    "Rent": "For Rent",
+    "Both": "Sale & Rent"
+  },
+  "loading": "Loading...",
+  "error": {
+    "generic": "Something went wrong. Please try again."
+  }
+}

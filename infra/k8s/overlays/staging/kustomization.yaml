@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Staging runs in a separate namespace inside the SAME production cluster.
+# It shares the ingress controller, cert-manager, and DO CCM, but has its own
+# database, secrets, and domain. Payments and mutations are sandboxed.
+namespace: consultores-staging
+
+resources:
+  - ../../base
+  - configmap.yaml
+  - ingress.yaml
+  - ingress-sse.yaml
+
+labels:
+  - pairs:
+      environment: staging
+
+patches:
+  - path: patches/api-deployment.yaml
+  - path: patches/dashboard-deployment.yaml
+  - path: patches/tenant-demo-deployment.yaml
+  - path: patches/tenant-acme-deployment.yaml
+
+images:
+  - name: consultores-api
+    newName: registry.digitalocean.com/consultores/consultores-api
+    newTag: staging
+  - name: consultores-worker
+    newName: registry.digitalocean.com/consultores/consultores-worker
+    newTag: staging
+  - name: consultores-dashboard
+    newName: registry.digitalocean.com/consultores/consultores-dashboard
+    newTag: staging
+  - name: consultores-tenant-demo
+    newName: registry.digitalocean.com/consultores/consultores-tenant-demo
+    newTag: staging
+  - name: consultores-tenant-acme
+    newName: registry.digitalocean.com/consultores/consultores-tenant-acme
+    newTag: staging

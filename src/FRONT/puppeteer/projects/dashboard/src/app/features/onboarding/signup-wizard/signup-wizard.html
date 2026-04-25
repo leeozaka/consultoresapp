@@ -1,0 +1,406 @@
+<main class="relative z-10 min-h-screen px-4 py-12 sm:px-6">
+  <div class="mx-auto max-w-2xl">
+
+    <!-- Logo -->
+    <a href="/" class="flex items-center justify-center gap-3 mb-10 no-underline group">
+      <div class="flex size-12 items-center justify-center rounded-xl bg-purple-500/20 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all duration-300 group-hover:scale-105">
+        <i class="pi pi-building text-xl text-purple-400"></i>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-2xl font-bold tracking-tight text-white font-display leading-none">IT</span>
+        <span class="text-[10px] font-medium tracking-[0.2em] uppercase text-purple-400 opacity-80 leading-none mt-1">Consultor</span>
+      </div>
+    </a>
+
+    <!-- Step indicator -->
+    <div class="flex items-center justify-center gap-2 mb-10">
+      @for (label of ['Imobiliária', 'Plano', 'Sua Conta', 'Revisão']; track $index) {
+        <div class="flex items-center gap-2">
+          <div class="flex size-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300"
+               [class]="$index < step()
+                 ? 'bg-purple-600 text-white'
+                 : $index === step()
+                   ? 'border-2 border-purple-500 text-purple-400 bg-purple-500/10'
+                   : 'border border-white/20 text-slate-500 bg-white/5'">
+            @if ($index < step()) {
+              <i class="pi pi-check text-[10px]"></i>
+            } @else {
+              {{ $index + 1 }}
+            }
+          </div>
+          <span class="hidden sm:block text-xs font-medium transition-colors duration-300"
+                [class]="$index === step() ? 'text-white' : 'text-slate-500'">{{ label }}</span>
+          @if ($index < 3) {
+            <div class="w-6 h-px mx-1" [class]="$index < step() ? 'bg-purple-600' : 'bg-white/10'"></div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Card -->
+    <div class="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 sm:p-10 shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/30 rounded-full blur-[60px] pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-pink-500/20 rounded-full blur-[60px] pointer-events-none"></div>
+
+      <div class="relative z-10">
+
+        <!-- Resuming overlay -->
+        @if (isResuming()) {
+          <div class="flex flex-col items-center justify-center py-12 gap-4">
+            <i class="pi pi-spin pi-spinner text-3xl text-purple-400"></i>
+            <p class="text-sm text-slate-400" i18n>Recuperando seus dados...</p>
+          </div>
+        }
+
+        <!-- Error alert -->
+        @if (errorMessage()) {
+          <div class="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200 backdrop-blur-sm flex items-start gap-3">
+            <i class="pi pi-exclamation-circle mt-0.5 text-red-400"></i>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        @if (!isResuming()) {
+        <!-- ── Step 0: Agency Info ── -->
+        @if (step() === 0) {
+          <h2 class="mb-1 text-2xl font-bold text-white font-display" i18n>Sua Imobiliária</h2>
+          <p class="mb-8 text-sm text-slate-400 font-body" i18n>Conte-nos sobre sua agência.</p>
+
+          <form [formGroup]="agencyForm" (ngSubmit)="nextFromAgency()" class="flex flex-col gap-5">
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium text-slate-300 ml-1" i18n>Nome da imobiliária</label>
+              <input type="text" formControlName="agencyName"
+                     placeholder="Minha Imobiliária"
+                     class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                     [class.border-red-500]="agencyForm.controls.agencyName.touched && agencyForm.controls.agencyName.invalid"
+                     i18n-placeholder />
+              @if (agencyForm.controls.agencyName.touched && agencyForm.controls.agencyName.invalid) {
+                <small class="text-xs text-red-400 ml-1" i18n>Mínimo de 2 caracteres.</small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium text-slate-300 ml-1" i18n>Endereço do portal <span class="text-purple-400">.consultor.app</span></label>
+              <div class="relative">
+                <input type="text" formControlName="slug"
+                       placeholder="minha-imob"
+                       (input)="onSlugInput($event)"
+                       class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3.5 pr-10 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                       [class.border-red-500]="(agencyForm.controls.slug.touched && agencyForm.controls.slug.invalid) || slugStatus() === 'taken'"
+                       [class.border-green-500]="slugStatus() === 'available'"
+                       i18n-placeholder />
+                <span class="absolute right-4 top-1/2 -translate-y-1/2">
+                  @if (slugStatus() === 'checking') {
+                    <i class="pi pi-spin pi-spinner text-slate-400 text-sm"></i>
+                  } @else if (slugStatus() === 'available') {
+                    <i class="pi pi-check-circle text-green-400 text-sm"></i>
+                  } @else if (slugStatus() === 'taken') {
+                    <i class="pi pi-times-circle text-red-400 text-sm"></i>
+                  }
+                </span>
+              </div>
+              @if (agencyForm.controls.slug.value) {
+                <small class="text-xs text-slate-500 ml-1">
+                  {{ agencyForm.controls.slug.value }}.consultor.app
+                </small>
+              }
+              @if (slugStatus() === 'taken') {
+                <small class="text-xs text-red-400 ml-1" i18n>Este endereço já está em uso.</small>
+              } @else if (agencyForm.controls.slug.touched && agencyForm.controls.slug.invalid) {
+                <small class="text-xs text-red-400 ml-1" i18n>Use apenas letras minúsculas, números e hífens.</small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium text-slate-300 ml-1" i18n>E-mail de contato</label>
+              <div class="relative">
+                <i class="pi pi-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="email" formControlName="contactEmail"
+                       placeholder="contato@minhaImob.com.br"
+                       class="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                       [class.border-red-500]="agencyForm.controls.contactEmail.touched && agencyForm.controls.contactEmail.invalid"
+                       i18n-placeholder />
+              </div>
+              @if (agencyForm.controls.contactEmail.touched && agencyForm.controls.contactEmail.invalid) {
+                <small class="text-xs text-red-400 ml-1" i18n>Informe um e-mail válido.</small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium text-slate-300 ml-1" i18n>Telefone <span class="text-slate-500">(opcional)</span></label>
+              <div class="relative">
+                <i class="pi pi-phone absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="tel" formControlName="contactPhone"
+                       placeholder="(11) 99999-9999"
+                       class="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                       i18n-placeholder />
+              </div>
+            </div>
+
+            <button type="submit"
+                    [disabled]="agencyForm.invalid || slugStatus() === 'taken' || slugStatus() === 'checking'"
+                    class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                    i18n>
+              Próximo
+              <i class="pi pi-arrow-right"></i>
+            </button>
+          </form>
+        }
+
+        <!-- ── Step 1: Plan Selection ── -->
+        @if (step() === 1) {
+          <h2 class="mb-1 text-2xl font-bold text-white font-display" i18n>Escolha seu Plano</h2>
+          <p class="mb-8 text-sm text-slate-400 font-body" i18n>Selecione o plano que melhor se encaixa na sua operação.</p>
+
+          @if (isLoadingPlans()) {
+            <div class="flex justify-center py-12">
+              <i class="pi pi-spin pi-spinner text-3xl text-purple-400"></i>
+            </div>
+          } @else {
+            <div class="flex flex-col gap-4 mb-8">
+              @for (plan of plans(); track plan.id; let i = $index) {
+                <button type="button"
+                        (click)="selectPlan(plan.id)"
+                        class="relative w-full rounded-2xl border p-5 text-left transition-all duration-200 cursor-pointer"
+                        [class]="plan.id === selectedPlanId()
+                          ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+                          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="grow">
+                      <div class="flex items-center gap-3 mb-2">
+                        <span class="text-base font-bold text-white">{{ plan.name }}</span>
+                        @if (i === 1) {
+                          <span class="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-300" i18n>Popular</span>
+                        }
+                      </div>
+                      <ul class="flex flex-wrap gap-x-4 gap-y-1">
+                        @for (feature of planFeatures(plan); track feature.label) {
+                          <li class="flex items-center gap-1.5 text-xs text-slate-400">
+                            <i [class]="feature.icon + ' text-purple-400 text-[10px]'"></i>
+                            {{ feature.label }}
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                    <div class="shrink-0 text-right">
+                      <span class="text-xl font-bold text-white">{{ plan.pricePerMonth | currency:'BRL':'symbol':'1.0-0' }}</span>
+                      <span class="block text-xs text-slate-500" i18n>/mês</span>
+                    </div>
+                  </div>
+                  @if (plan.id === selectedPlanId()) {
+                    <div class="absolute top-3 right-3 flex size-5 items-center justify-center rounded-full bg-purple-600">
+                      <i class="pi pi-check text-[9px] text-white"></i>
+                    </div>
+                  }
+                </button>
+              }
+            </div>
+          }
+
+          <div class="flex gap-3">
+            <button type="button"
+                    (click)="goToStep(0)"
+                    class="flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/10 cursor-pointer"
+                    i18n>
+              <i class="pi pi-arrow-left"></i>
+              Voltar
+            </button>
+            <button type="button"
+                    (click)="nextFromPlan()"
+                    [disabled]="!selectedPlanId()"
+                    class="flex-1 flex items-center justify-center gap-2 rounded-xl bg-purple-600 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                    i18n>
+              Próximo
+              <i class="pi pi-arrow-right"></i>
+            </button>
+          </div>
+        }
+
+        <!-- ── Step 2: Account Info ── -->
+        @if (step() === 2) {
+          <h2 class="mb-1 text-2xl font-bold text-white font-display" i18n>Sua Conta</h2>
+          <p class="mb-8 text-sm text-slate-400 font-body" i18n>Você será o administrador da imobiliária.</p>
+
+          <form [formGroup]="accountForm" (ngSubmit)="nextFromAccount()" class="flex flex-col gap-5">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium text-slate-300 ml-1" i18n>Nome</label>
+                <input type="text" formControlName="firstName" placeholder="João"
+                       class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                       [class.border-red-500]="accountForm.controls.firstName.touched && accountForm.controls.firstName.invalid"
+                       i18n-placeholder />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-medium text-slate-300 ml-1" i18n>Sobrenome</label>
+                <input type="text" formControlName="lastName" placeholder="Silva"
+                       class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                       [class.border-red-500]="accountForm.controls.lastName.touched && accountForm.controls.lastName.invalid"
+                       i18n-placeholder />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium text-slate-300 ml-1" i18n>E-mail de acesso</label>
+              <div class="relative">
+                <i class="pi pi-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="email" formControlName="email"
+                       placeholder="joao@minha-imob.com.br"
+                       class="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                       [class.border-red-500]="accountForm.controls.email.touched && accountForm.controls.email.invalid"
+                       i18n-placeholder />
+              </div>
+              @if (accountForm.controls.email.touched && accountForm.controls.email.invalid) {
+                <small class="text-xs text-red-400 ml-1" i18n>Informe um e-mail válido.</small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium text-slate-300 ml-1" i18n>Senha</label>
+              <div class="relative">
+                <i class="pi pi-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="password" formControlName="password"
+                       placeholder="Mínimo 8 caracteres"
+                       class="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                       [class.border-red-500]="accountForm.controls.password.touched && accountForm.controls.password.invalid"
+                       i18n-placeholder />
+              </div>
+              @if (accountForm.controls.password.touched && accountForm.controls.password.hasError('minlength')) {
+                <small class="text-xs text-red-400 ml-1" i18n>Mínimo de 8 caracteres.</small>
+              } @else if (accountForm.controls.password.touched && accountForm.controls.password.hasError('pattern')) {
+                <small class="text-xs text-red-400 ml-1" i18n>Use letras maiúsculas, minúsculas e números.</small>
+              }
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium text-slate-300 ml-1" i18n>Confirmar senha</label>
+              <div class="relative">
+                <i class="pi pi-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="password" formControlName="confirmPassword"
+                       placeholder="Repita a senha"
+                       class="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all duration-200"
+                       [class.border-red-500]="accountForm.controls.confirmPassword.touched && accountForm.hasError('passwordMismatch')"
+                       i18n-placeholder />
+              </div>
+              @if (accountForm.controls.confirmPassword.touched && accountForm.hasError('passwordMismatch')) {
+                <small class="text-xs text-red-400 ml-1" i18n>As senhas não coincidem.</small>
+              }
+            </div>
+
+            <div class="flex gap-3 mt-2">
+              <button type="button"
+                      (click)="goToStep(1)"
+                      class="flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/10 cursor-pointer"
+                      i18n>
+                <i class="pi pi-arrow-left"></i>
+                Voltar
+              </button>
+              <button type="submit"
+                      [disabled]="accountForm.invalid"
+                      class="flex-1 flex items-center justify-center gap-2 rounded-xl bg-purple-600 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                      i18n>
+                Revisar
+                <i class="pi pi-arrow-right"></i>
+              </button>
+            </div>
+          </form>
+        }
+
+        <!-- ── Step 3: Review ── -->
+        @if (step() === 3) {
+          <h2 class="mb-1 text-2xl font-bold text-white font-display" i18n>Revisão</h2>
+          <p class="mb-8 text-sm text-slate-400 font-body" i18n>Confirme os dados antes de ir para o pagamento.</p>
+
+          <div class="flex flex-col gap-4 mb-8">
+
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-purple-400" i18n>Imobiliária</span>
+                <button type="button" (click)="goToStep(0)" class="text-xs text-slate-500 hover:text-white transition-colors cursor-pointer" i18n>Editar</button>
+              </div>
+              <p class="text-sm font-semibold text-white">{{ agencyForm.controls.agencyName.value }}</p>
+              <p class="text-xs text-slate-400 mt-0.5">{{ agencyForm.controls.slug.value }}.consultor.app</p>
+              <p class="text-xs text-slate-400">{{ agencyForm.controls.contactEmail.value }}</p>
+            </div>
+
+            @if (selectedPlan) {
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold uppercase tracking-wider text-purple-400" i18n>Plano</span>
+                  <button type="button" (click)="goToStep(1)" class="text-xs text-slate-500 hover:text-white transition-colors cursor-pointer" i18n>Editar</button>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-semibold text-white">{{ selectedPlan.name }}</span>
+                  <span class="text-sm font-bold text-purple-300">{{ selectedPlan.pricePerMonth | currency:'BRL':'symbol':'1.0-0' }}<span class="text-xs text-slate-500 font-normal">/mês</span></span>
+                </div>
+              </div>
+            }
+
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-purple-400" i18n>Conta</span>
+                <button type="button" (click)="goToStep(2)" class="text-xs text-slate-500 hover:text-white transition-colors cursor-pointer" i18n>Editar</button>
+              </div>
+              <p class="text-sm font-semibold text-white">{{ accountForm.controls.firstName.value }} {{ accountForm.controls.lastName.value }}</p>
+              <p class="text-xs text-slate-400 mt-0.5">{{ accountForm.controls.email.value }}</p>
+              @if (passwordRequired() && !accountForm.controls.password.value) {
+                <div class="mt-2 flex items-center gap-1.5 text-xs text-amber-400">
+                  <i class="pi pi-exclamation-triangle text-[10px]"></i>
+                  <span i18n>Senha precisa ser informada novamente</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button"
+                    (click)="goToStep(2)"
+                    class="flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/10 cursor-pointer"
+                    i18n>
+              <i class="pi pi-arrow-left"></i>
+              Voltar
+            </button>
+            <button type="button"
+                    (click)="submit()"
+                    [disabled]="isSubmitting()"
+                    class="flex-1 flex items-center justify-center gap-2 rounded-xl bg-purple-600 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">
+              @if (isSubmitting()) {
+                <i class="pi pi-spin pi-spinner"></i>
+                <span i18n>Processando...</span>
+              } @else {
+                <span i18n>Ir para o Pagamento</span>
+                <i class="pi pi-credit-card"></i>
+              }
+            </button>
+          </div>
+
+          <p class="mt-6 text-center text-xs text-slate-500 font-body" i18n>
+            Você será redirecionado para o Stripe para concluir o pagamento com segurança.
+          </p>
+
+          @if (pendingSignup()) {
+            <div class="mt-4 text-center">
+              <button type="button"
+                      (click)="dismissSignup()"
+                      [disabled]="isDismissing()"
+                      class="text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer underline underline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                @if (isDismissing()) {
+                  <i class="pi pi-spin pi-spinner mr-1"></i>
+                }
+                <span i18n>Cancelar cadastro e liberar o endereço</span>
+              </button>
+            </div>
+          }
+        }
+        } <!-- end !isResuming() -->
+
+      </div>
+    </div>
+
+    <p class="mt-6 text-center text-sm text-slate-500">
+      <span i18n>Já tem uma conta?</span>
+      <a href="/auth" class="ml-1 text-purple-400 hover:text-purple-300 transition-colors" i18n>Entrar</a>
+    </p>
+
+  </div>
+</main>

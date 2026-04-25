@@ -1,0 +1,61 @@
+@if (isLoading()) {
+  <div class="flex min-h-screen items-center justify-center" style="background: var(--brand-bg, #f8fafc)">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else {
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b backdrop-blur-lg"
+          style="background: rgba(255,255,255,0.9); border-color: #e2e8f0">
+    <div class="mx-auto flex items-center justify-between px-6 py-4" style="max-width: 1200px">
+      <a routerLink="/" class="flex items-center gap-3 no-underline">
+        @if (logoUrl()) {
+          <img [src]="logoUrl()" [alt]="displayName()" class="h-8 w-auto" loading="eager">
+        }
+        <span class="text-xl font-bold" style="color: var(--brand-primary, #1A73E8)">
+          {{ displayName() }}
+        </span>
+      </a>
+
+      <nav class="flex items-center gap-6">
+        <a routerLink="/imoveis" class="text-sm font-medium no-underline transition hover:opacity-80"
+           style="color: #334155">
+          Imóveis
+        </a>
+        <a routerLink="/contato" class="text-sm font-medium no-underline transition hover:opacity-80"
+           style="color: #334155">
+          Contato
+        </a>
+      </nav>
+    </div>
+
+    @if (tagline()) {
+      <div class="border-t px-6 py-2 text-center text-xs opacity-60"
+           style="border-color: #e2e8f0; color: #64748b">
+        {{ tagline() }}
+      </div>
+    }
+  </header>
+
+  <!-- Content -->
+  <main class="mx-auto min-h-screen px-6 py-8" style="max-width: 1200px">
+    <router-outlet />
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t px-6 py-8" style="border-color: #e2e8f0; background: #f8fafc">
+    <div class="mx-auto flex flex-col items-center justify-between gap-4 md:flex-row"
+         style="max-width: 1200px">
+      <p class="text-xs opacity-50" style="color: #64748b">
+        &copy; {{ currentYear }} {{ displayName() }}
+      </p>
+      <p class="text-xs opacity-30" style="color: #64748b">
+        Desenvolvido com
+        <a href="https://itconsultor.com"
+           target="_blank"
+           rel="noopener"
+           class="font-medium no-underline hover:opacity-80"
+           style="color: var(--brand-primary, #1A73E8)">ITConsultor</a>
+      </p>
+    </div>
+  </footer>
+}

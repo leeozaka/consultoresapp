@@ -1,0 +1,39 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: dashboard-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: dashboard
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tenant-demo-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: tenant-demo
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tenant-acme-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: tenant-acme

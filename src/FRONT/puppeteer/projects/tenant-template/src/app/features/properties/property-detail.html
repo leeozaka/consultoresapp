@@ -1,0 +1,154 @@
+@if (isLoading()) {
+  <div class="flex items-center justify-center min-h-[60vh]">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else if (notFound()) {
+  <section class="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-4">
+    <i class="pi pi-home text-6xl text-surface-400"></i>
+    <h2 class="text-2xl font-bold text-surface-700">Imóvel não encontrado</h2>
+    <p class="text-surface-500">O imóvel que você procura não existe ou foi removido.</p>
+    <a routerLink="/" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-primary/90">
+      <i class="pi pi-arrow-left"></i>
+      Voltar aos imóveis
+    </a>
+  </section>
+} @else if (property(); as prop) {
+  <article class="mx-auto max-w-6xl px-4 py-8">
+
+    <!-- Back link -->
+    <a routerLink="/" class="mb-6 inline-flex items-center gap-2 text-sm text-surface-500 transition hover:text-primary">
+      <i class="pi pi-arrow-left"></i>
+      Voltar aos imóveis
+    </a>
+
+    <!-- Gallery -->
+    @if (prop.images && prop.images.length > 0) {
+      <div class="mb-8 overflow-hidden rounded-xl">
+        <app-image-gallery [images]="prop.images" />
+      </div>
+    }
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <!-- Main content -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Title & Status -->
+        <header>
+          <div class="flex flex-wrap items-center gap-3 mb-2">
+            <span class="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              {{ prop.status | propertyStatus }}
+            </span>
+            @if (prop.listingType === 'Rent') {
+              <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                Aluguel
+              </span>
+            } @else if (prop.listingType === 'Sale') {
+              <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                Venda
+              </span>
+            } @else if (prop.listingType === 'Both') {
+              <span class="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
+                Venda & Aluguel
+              </span>
+            }
+          </div>
+          <h1 class="text-3xl font-bold text-surface-900">{{ prop.title }}</h1>
+          @if (prop.address || prop.city) {
+            <p class="mt-2 flex items-center gap-2 text-surface-500">
+              <i class="pi pi-map-marker"></i>
+              {{ prop.address }}@if (prop.city) {, {{ prop.city }}}@if (prop.state) { - {{ prop.state }}}
+            </p>
+          }
+        </header>
+
+        <!-- Description -->
+        @if (prop.description) {
+          <section>
+            <h2 class="mb-3 text-lg font-semibold text-surface-800">Descrição</h2>
+            <p class="leading-relaxed text-surface-600 whitespace-pre-line">{{ prop.description }}</p>
+          </section>
+        }
+
+        <!-- Features grid -->
+        <section>
+          <h2 class="mb-3 text-lg font-semibold text-surface-800">Características</h2>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+            @if (prop.bedrooms != null) {
+              <div class="flex flex-col items-center gap-1 rounded-lg border border-surface-200 p-4">
+                <i class="pi pi-home text-xl text-primary"></i>
+                <span class="text-lg font-bold text-surface-800">{{ prop.bedrooms }}</span>
+                <span class="text-xs text-surface-500">Quartos</span>
+              </div>
+            }
+            @if (prop.bathrooms != null) {
+              <div class="flex flex-col items-center gap-1 rounded-lg border border-surface-200 p-4">
+                <i class="pi pi-inbox text-xl text-primary"></i>
+                <span class="text-lg font-bold text-surface-800">{{ prop.bathrooms }}</span>
+                <span class="text-xs text-surface-500">Banheiros</span>
+              </div>
+            }
+            @if (prop.areaSqMeters != null) {
+              <div class="flex flex-col items-center gap-1 rounded-lg border border-surface-200 p-4">
+                <i class="pi pi-th-large text-xl text-primary"></i>
+                <span class="text-lg font-bold text-surface-800">{{ prop.areaSqMeters }}m²</span>
+                <span class="text-xs text-surface-500">Área</span>
+              </div>
+            }
+            @if (prop.parkingSpaces != null) {
+              <div class="flex flex-col items-center gap-1 rounded-lg border border-surface-200 p-4">
+                <i class="pi pi-car text-xl text-primary"></i>
+                <span class="text-lg font-bold text-surface-800">{{ prop.parkingSpaces }}</span>
+                <span class="text-xs text-surface-500">Vagas</span>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="space-y-6">
+        <!-- Price card -->
+        <div class="rounded-xl border border-surface-200 bg-white p-6 shadow-sm">
+          <p class="mb-1 text-sm text-surface-500">
+            @if (prop.listingType === 'Rent') {
+              Aluguel mensal
+            } @else {
+              Valor
+            }
+          </p>
+          <div class="text-3xl font-bold text-primary">
+            <app-price-display [price]="prop.price" />
+          </div>
+        </div>
+
+        <!-- Contact CTA -->
+        <div class="rounded-xl border border-surface-200 bg-white p-6 shadow-sm">
+          <h3 class="mb-3 font-semibold text-surface-800">Interessado?</h3>
+          <p class="mb-4 text-sm text-surface-500">Entre em contato para agendar uma visita ou obter mais informações.</p>
+          @if (prop.contactPhone) {
+            <a
+              [href]="whatsAppHref(prop.contactPhone)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold text-white transition"
+              style="background: #25D366"
+            >
+              <i class="pi pi-whatsapp"></i>
+              Falar pelo WhatsApp
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white transition hover:bg-primary/90"
+            >
+              <i class="pi pi-phone mr-2"></i>
+              Entrar em contato
+            </button>
+          }
+        </div>
+
+        <!-- Property ref -->
+        <p class="text-center text-xs text-surface-400">Ref: {{ prop.id }}</p>
+      </aside>
+    </div>
+  </article>
+}

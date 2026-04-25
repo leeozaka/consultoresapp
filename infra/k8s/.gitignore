@@ -1,0 +1,4 @@
+# K8s secrets — NEVER commit live secret values
+secrets.yaml
+overlays/staging/secrets.yaml
+overlays/production/secrets.yaml

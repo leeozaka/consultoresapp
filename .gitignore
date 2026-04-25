@@ -1,0 +1,81 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio
+.vs/
+*.sln.ide/
+
+## Rider
+.idea/
+*.sln.iml
+
+## macOS
+.DS_Store
+._*
+
+## Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+## LocalStack persisted state
+volume/
+
+## Misc
+*.swp
+*.bak
+*.tmp
+*~
+*.pdf
+
+## Docker
+docker-compose.override.yml
+
+## k6 results
+k6/results/*.json
+
+## Tilt
+.tilt-dev/
+
+## k3d
+k3d-kubeconfig.yaml
+
+## Terraform generated config
+infra/terraform/terraform.tfvars
+infra/terraform/kubeconfig
+infra/terraform/kube_config
+infra/terraform/talosconfig
+
+## Serena MCP Server
+# Ignore runtime data but keep configuration files
+.serena/*
+!.serena/serena_config.yml
+!.serena/project.yml
+!.serena/README.md

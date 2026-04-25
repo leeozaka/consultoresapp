@@ -1,0 +1,33 @@
+@if (notifications().length > 0) {
+  <div
+    class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 max-w-sm w-[calc(100vw-3rem)]"
+    role="region"
+    aria-label="Notificações"
+    aria-live="polite"
+  >
+    @for (n of notifications(); track trackById($index, n)) {
+      <div
+        class="flex items-start gap-3 px-5 py-4 rounded-xl border-l-4 bg-surface-0 shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.08)] animate-toast-in"
+        [style.border-color]="severityColor(n.severity)"
+        role="alert"
+        aria-atomic="true"
+      >
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm text-surface-900 m-0">{{ n.summary }}</p>
+          @if (n.detail) {
+            <p class="text-[13px] text-surface-500 mt-1 m-0">{{ n.detail }}</p>
+          }
+        </div>
+        <button
+          class="shrink-0 flex items-center justify-center bg-transparent border-0 cursor-pointer p-0.5 text-surface-400 rounded transition-colors hover:text-surface-700 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          (click)="dismiss(n.id)"
+          aria-label="Fechar notificação"
+        >
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    }
+  </div>
+}

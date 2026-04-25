@@ -1,0 +1,146 @@
+{
+	"servers": {
+		"angular-cli": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@angular/cli",
+				"mcp"
+			],
+			"type": "stdio"
+		},
+		"primeng": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@primeng/mcp"
+			],
+			"type": "stdio"
+		},
+		"chrome-devtools": {
+			"command": "npx",
+			"args": [
+				"chrome-devtools-mcp@latest"
+			],
+			"type": "stdio"
+		},
+		"oraios/serena": {
+			"type": "stdio",
+			"command": "uvx",
+			"args": [
+				"--from",
+				"git+https://github.com/oraios/serena",
+				"serena",
+				"start-mcp-server",
+				"serena@latest",
+				"--context",
+				"ide-assistant"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"upstash/context7": {
+			"type": "http",
+			"url": "https://mcp.context7.com/mcp",
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"com.stripe/mcp": {
+			"type": "http",
+			"url": "https://mcp.stripe.com",
+			"gallery": "https://api.mcp.github.com",
+			"version": "0.2.4"
+		},
+		"RedisMCPServer": {
+			"type": "stdio",
+			"command": "uvx",
+			"args": [
+				"--from",
+				"redis-mcp-server@latest",
+				"redis-mcp-server",
+				"--url",
+				"redis://localhost:6379/0"
+			]
+		},
+		"io.github.hashicorp/terraform-mcp-server": {
+			"type": "stdio",
+			"command": "docker",
+			"args": [
+				"run",
+				"-i",
+				"--rm",
+				"run",
+				"--rm",
+				"-i",
+				"-e",
+				"${input:e}",
+				"TFE_ADDRESS",
+				"-e",
+				"${input:e}",
+				"TFE_TOKEN",
+				"-e",
+				"${input:e}",
+				"ENABLE_TF_OPERATIONS",
+				"hashicorp/terraform-mcp-server:0.4.0",
+				"-e",
+				"TFE_ADDRESS",
+				"-e",
+				"TFE_TOKEN",
+				"-e",
+				"ENABLE_TF_OPERATIONS",
+				"docker.io/hashicorp/terraform-mcp-server:0.4.0"
+			],
+			"env": {
+				"TFE_ADDRESS": "${input:TFE_ADDRESS}",
+				"TFE_TOKEN": "${input:TFE_TOKEN}",
+				"ENABLE_TF_OPERATIONS": "${input:ENABLE_TF_OPERATIONS}"
+			},
+			"gallery": "https://api.mcp.github.com",
+			"version": "0.4.0"
+		}
+	},
+	"inputs": [
+		{
+			"id": "e",
+			"type": "promptString",
+			"description": "Set an environment variable in the runtime",
+			"password": false
+		},
+		{
+			"id": "e",
+			"type": "promptString",
+			"description": "Set an environment variable in the runtime",
+			"password": false
+		},
+		{
+			"id": "e",
+			"type": "promptString",
+			"description": "Set an environment variable in the runtime",
+			"password": false
+		},
+		{
+			"id": "TFE_ADDRESS",
+			"type": "promptString",
+			"description": "HCP Terraform or Terraform Enterprise base URL.",
+			"password": false,
+			"default": "https://app.terraform.io"
+		},
+		{
+			"id": "TFE_TOKEN",
+			"type": "promptString",
+			"description": "HCP Terraform or Terraform Enterprise API token used to authenticate requests.",
+			"password": true
+		},
+		{
+			"id": "ENABLE_TF_OPERATIONS",
+			"type": "pickString",
+			"description": "Set to true to enable tools that execute Terraform operations requiring explicit approval.",
+			"password": false,
+			"default": "false",
+			"options": [
+				"true",
+				"false"
+			]
+		}
+	]
+}

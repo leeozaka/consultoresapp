@@ -1,0 +1,630 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm",
+    "analytics": "507f1074-f3b2-4529-8053-23a9097fe2cc"
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "core": {
+      "projectType": "library",
+      "root": "projects/core",
+      "sourceRoot": "projects/core/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/core/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/core/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/core/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    },
+    "dashboard": {
+      "projectType": "application",
+      "root": "projects/dashboard",
+      "sourceRoot": "projects/dashboard/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/dashboard/src/main.ts",
+            "polyfills": ["@angular/localize/init"],
+            "tsConfig": "projects/dashboard/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/dashboard/public"
+              }
+            ],
+            "styles": [
+              "projects/dashboard/src/styles.css"
+            ],
+            "security": {
+              "allowedHosts": [
+                "localhost",
+                "127.0.0.1",
+                "consultor.localhost"
+              ]
+            }
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all",
+              "server": "projects/dashboard/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/dashboard/src/server.ts"
+              }
+            },
+            "docker": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "server": "projects/dashboard/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/dashboard/src/server.ts"
+              }
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.staging.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "server": "projects/dashboard/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/dashboard/src/server.ts"
+              }
+            },
+            "docker-dev": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": "projects/dashboard/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/dashboard/src/server.ts"
+              }
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.development.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": "projects/dashboard/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/dashboard/src/server.ts"
+              }
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "localhost",
+              "127.0.0.1",
+              "consultor.localhost"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "dashboard:build:production"
+            },
+            "docker": {
+              "buildTarget": "dashboard:build:docker"
+            },
+            "docker-dev": {
+              "buildTarget": "dashboard:build:docker-dev"
+            },
+            "development": {
+              "buildTarget": "dashboard:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/dashboard/tsconfig.spec.json",
+            "setupFiles": ["projects/dashboard/src/test-setup.ts"]
+          }
+        }
+      }
+    },
+    "tenant-template": {
+      "projectType": "application",
+      "root": "projects/tenant-template",
+      "sourceRoot": "projects/tenant-template/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/tenant-template/src/main.ts",
+            "polyfills": ["@angular/localize/init"],
+            "tsConfig": "projects/tenant-template/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/tenant-template/public"
+              }
+            ],
+            "styles": [
+              "projects/tenant-template/src/styles.css"
+            ],
+            "security": {
+              "allowedHosts": [
+                "localhost",
+                "127.0.0.1",
+                "*.consultor.localhost"
+              ]
+            }
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all",
+              "server": "projects/tenant-template/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-template/src/server.ts"
+              }
+            },
+            "docker": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "server": "projects/tenant-template/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-template/src/server.ts"
+              }
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.staging.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "server": "projects/tenant-template/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-template/src/server.ts"
+              }
+            },
+            "docker-dev": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": "projects/tenant-template/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-template/src/server.ts"
+              }
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.development.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": "projects/tenant-template/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-template/src/server.ts"
+              }
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "localhost",
+              "127.0.0.1",
+              "*.consultor.localhost"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "tenant-template:build:production"
+            },
+            "docker": {
+              "buildTarget": "tenant-template:build:docker"
+            },
+            "docker-dev": {
+              "buildTarget": "tenant-template:build:docker-dev"
+            },
+            "development": {
+              "buildTarget": "tenant-template:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/tenant-template/tsconfig.spec.json",
+            "setupFiles": ["projects/tenant-template/src/test-setup.ts"]
+          }
+        }
+      }
+    },
+    "tenant-demo": {
+      "projectType": "application",
+      "root": "projects/tenant-demo",
+      "sourceRoot": "projects/tenant-demo/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/tenant-demo/src/main.ts",
+            "polyfills": ["@angular/localize/init"],
+            "tsConfig": "projects/tenant-demo/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/tenant-demo/public"
+              }
+            ],
+            "styles": [
+              "projects/tenant-demo/src/styles.css"
+            ],
+            "security": {
+              "allowedHosts": [
+                "localhost",
+                "127.0.0.1",
+                "*.consultor.localhost"
+              ]
+            }
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all",
+              "server": "projects/tenant-demo/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-demo/src/server.ts"
+              }
+            },
+            "docker": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "server": "projects/tenant-demo/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-demo/src/server.ts"
+              }
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.staging.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "server": "projects/tenant-demo/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-demo/src/server.ts"
+              }
+            },
+            "docker-dev": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": "projects/tenant-demo/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-demo/src/server.ts"
+              }
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.development.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": "projects/tenant-demo/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-demo/src/server.ts"
+              }
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "localhost",
+              "127.0.0.1",
+              "*.consultor.localhost"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "tenant-demo:build:production"
+            },
+            "docker": {
+              "buildTarget": "tenant-demo:build:docker"
+            },
+            "docker-dev": {
+              "buildTarget": "tenant-demo:build:docker-dev"
+            },
+            "development": {
+              "buildTarget": "tenant-demo:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/tenant-demo/tsconfig.spec.json",
+            "setupFiles": ["projects/tenant-demo/src/test-setup.ts"]
+          }
+        }
+      }
+    },
+    "tenant-acme": {
+      "projectType": "application",
+      "root": "projects/tenant-acme",
+      "sourceRoot": "projects/tenant-acme/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/tenant-acme/src/main.ts",
+            "polyfills": ["@angular/localize/init"],
+            "tsConfig": "projects/tenant-acme/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/tenant-acme/public"
+              }
+            ],
+            "styles": [
+              "projects/tenant-acme/src/styles.css"
+            ],
+            "security": {
+              "allowedHosts": [
+                "localhost",
+                "127.0.0.1",
+                "*.consultor.localhost"
+              ]
+            }
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all",
+              "server": "projects/tenant-acme/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-acme/src/server.ts"
+              }
+            },
+            "docker": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "server": "projects/tenant-acme/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-acme/src/server.ts"
+              }
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.staging.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "server": "projects/tenant-acme/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-acme/src/server.ts"
+              }
+            },
+            "docker-dev": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": "projects/tenant-acme/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-acme/src/server.ts"
+              }
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core/src/lib/environments/environment.ts",
+                  "with": "projects/core/src/lib/environments/environment.development.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "server": "projects/tenant-acme/src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "projects/tenant-acme/src/server.ts"
+              }
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "localhost",
+              "127.0.0.1",
+              "*.consultor.localhost"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "tenant-acme:build:production"
+            },
+            "docker": {
+              "buildTarget": "tenant-acme:build:docker"
+            },
+            "docker-dev": {
+              "buildTarget": "tenant-acme:build:docker-dev"
+            },
+            "development": {
+              "buildTarget": "tenant-acme:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/tenant-acme/tsconfig.spec.json",
+            "setupFiles": ["projects/tenant-acme/src/test-setup.ts"]
+          }
+        }
+      }
+    }
+  }
+}

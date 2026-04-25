@@ -1,0 +1,185 @@
+@if (isLoading()) {
+  <div class="flex justify-center py-16">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else if (user(); as u) {
+  <div class="mb-6">
+    <a routerLink="/admin/users"
+       class="mb-4 inline-flex items-center gap-1 text-sm no-underline transition-colors"
+       style="color: #64748b">
+      <i class="pi pi-arrow-left text-xs"></i>
+      Usuários
+    </a>
+    <div class="flex flex-wrap items-center gap-3">
+      <h1 class="text-xl font-bold" style="color: #1e293b">{{ u.firstName }} {{ u.lastName }}</h1>
+      <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+            [class]="u.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
+        {{ u.isActive ? 'Ativo' : 'Inativo' }}
+      </span>
+      @for (role of u.roles; track role) {
+        <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+              style="background: #ede9fe; color: #5b21b6">
+          {{ role }}
+        </span>
+      }
+    </div>
+    <p class="mt-1 text-sm" style="color: #94a3b8">{{ u.email }} · Criado em {{ u.createdAtUtc | date:'dd/MM/yyyy' }}</p>
+  </div>
+
+  <div class="space-y-6">
+    <!-- Summary bar -->
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="rounded-xl border bg-white px-5 py-4" style="border-color: #e2e8f0">
+        <p class="mb-1 text-xs font-medium" style="color: #64748b" i18n>Tenant</p>
+        @if (tenant(); as t) {
+          <a [routerLink]="['/admin/tenants', t.id]"
+             class="text-sm font-semibold no-underline" style="color: #1d4ed8">
+            {{ t.name }}
+          </a>
+          <p class="text-xs" style="color: #94a3b8">{{ t.slug }}</p>
+        } @else {
+          <p class="text-sm" style="color: #94a3b8" i18n>Sem tenant atribuído</p>
+        }
+      </div>
+      <div class="rounded-xl border bg-white px-5 py-4" style="border-color: #e2e8f0">
+        <p class="mb-1 text-xs font-medium" style="color: #64748b" i18n>Funções</p>
+        @if (u.roles.length > 0) {
+          <div class="flex flex-wrap gap-1">
+            @for (role of u.roles; track role) {
+              <span class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                    style="background: #ede9fe; color: #5b21b6">{{ role }}</span>
+            }
+          </div>
+        } @else {
+          <p class="text-sm" style="color: #94a3b8" i18n>Sem função</p>
+        }
+      </div>
+    </div>
+
+    <!-- Edit Profile -->
+    <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n>Editar Perfil</h2>
+
+      @if (saveError()) {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ saveError() }}
+        </div>
+      }
+
+      <form class="space-y-4" (ngSubmit)="saveProfile()">
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Nome</label>
+            <input type="text"
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editFirstName()" (ngModelChange)="editFirstName.set($event)" name="firstName">
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Sobrenome</label>
+            <input type="text"
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editLastName()" (ngModelChange)="editLastName.set($event)" name="lastName">
+          </div>
+          <div class="md:col-span-2">
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>E-mail</label>
+            <input type="email"
+                   class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="editEmail()" (ngModelChange)="editEmail.set($event)" name="email">
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button type="submit"
+                  class="rounded-lg px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+                  style="background: #1d4ed8"
+                  [disabled]="isSaving()" i18n>
+            @if (isSaving()) { <i class="pi pi-spin pi-spinner mr-1"></i> }
+            Salvar Perfil
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-wrap gap-3">
+      <button type="button"
+              class="rounded-lg px-5 py-2.5 text-sm font-semibold cursor-pointer disabled:opacity-50"
+              [class]="u.isActive ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'"
+              [disabled]="isTogglingActive()"
+              (click)="toggleActive()" i18n>
+        @if (isTogglingActive()) { <i class="pi pi-spin pi-spinner mr-1"></i> }
+        {{ u.isActive ? 'Desativar Usuário' : 'Ativar Usuário' }}
+      </button>
+      <button type="button"
+              class="rounded-lg px-5 py-2.5 text-sm font-semibold cursor-pointer"
+              style="background: #f1f5f9; color: #475569"
+              (click)="openAssignModal()" i18n>
+        <i class="pi pi-link mr-1"></i>
+        Atribuir Tenant
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="py-16 text-center">
+    <i class="pi pi-exclamation-triangle mb-4 text-4xl" style="color: #f59e0b"></i>
+    <p class="text-sm" style="color: #64748b" i18n>Usuário não encontrado.</p>
+    <a routerLink="/admin/users" class="mt-2 inline-block text-sm no-underline" style="color: #1d4ed8" i18n>Voltar</a>
+  </div>
+}
+
+<!-- Assign modal -->
+@if (showAssignModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
+    <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+      <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-lg font-bold" style="color: #1e293b" i18n>Atribuir Tenant</h2>
+        <button type="button" (click)="showAssignModal.set(false)" class="rounded-lg p-2 cursor-pointer hover:bg-slate-100">
+          <i class="pi pi-times" style="color: #94a3b8"></i>
+        </button>
+      </div>
+
+      @if (assignError()) {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ assignError() }}
+        </div>
+      }
+
+      <div class="flex flex-col gap-4">
+        <div>
+          <label class="mb-1 block text-sm font-medium" style="color: #374151" i18n>Tenant</label>
+          <select [ngModel]="assignTenantId()" (ngModelChange)="assignTenantId.set($event)" name="assignTenantId"
+                  class="w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2"
+                  style="border-color: #d1d5db; color: #1e293b">
+            <option value="" disabled i18n>Selecione um tenant...</option>
+            @for (t of tenants(); track t.id) {
+              <option [value]="t.id">{{ t.name }} ({{ t.slug }})</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium" style="color: #374151" i18n>Função</label>
+          <select [ngModel]="assignRole()" (ngModelChange)="assignRole.set($event)" name="assignRole"
+                  class="w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2"
+                  style="border-color: #d1d5db; color: #1e293b">
+            <option value="TenantAdmin" i18n>TenantAdmin — proprietário da imobiliária</option>
+            <option value="Agent" i18n>Agent — corretor</option>
+          </select>
+        </div>
+        <div class="mt-2 flex justify-end gap-3">
+          <button type="button" (click)="showAssignModal.set(false)"
+                  class="rounded-lg px-4 py-2 text-sm font-medium cursor-pointer"
+                  style="background: #f1f5f9; color: #475569" i18n>Cancelar</button>
+          <button type="button"
+                  [disabled]="isAssigning() || !assignTenantId()"
+                  class="rounded-lg px-4 py-2 text-sm font-semibold text-white cursor-pointer disabled:opacity-50"
+                  style="background: #7c3aed"
+                  (click)="confirmAssign()" i18n>
+            {{ isAssigning() ? 'Atribuindo...' : 'Confirmar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

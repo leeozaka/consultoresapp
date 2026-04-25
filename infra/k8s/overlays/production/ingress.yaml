@@ -1,0 +1,157 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: consultores
+  namespace: consultores
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+    # HSTS — enable after verifying TLS works end-to-end
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+spec:
+  ingressClassName: nginx
+
+  tls:
+    # Note: wildcard TLS (*.consultor.app) requires DNS-01.
+    # Set cloudflare_api_token and apply cert-manager/cluster-issuer-dns.yaml.
+    - hosts:
+        - itcorretor.com
+        - api.itcorretor.com
+        - demo.itcorretor.com
+        - acme.itcorretor.com
+      secretName: itcorretor-com-tls
+
+  rules:
+    # ── Root domain (dashboard) ────────────────────────────────────────────────
+    - host: itcorretor.com
+      http: &prod-paths
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /connect
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /.well-known
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard
+                port:
+                  number: 4000
+
+    # ── API subdomain (OIDC issuer & direct API access) ────────────────────────
+    - host: api.itcorretor.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+
+    # ── tenant-demo ───────────────────────────────────────────────────────────
+    - host: demo.itcorretor.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /connect
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /.well-known
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tenant-demo
+                port:
+                  number: 4000
+
+    # ── tenant-acme ───────────────────────────────────────────────────────────
+    - host: acme.itcorretor.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /connect
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /.well-known
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tenant-acme
+                port:
+                  number: 4000
+
+    # ── Tenant subdomains — uncomment after DNS-01 wildcard TLS ───────────────
+    # - host: "*.itcorretor.com"
+    #   http: *prod-paths

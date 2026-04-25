@@ -1,0 +1,103 @@
+# Patches the base API deployment for local development:
+# - dotnet watch for hot-reload
+# - relaxed probes (longer waits for debug builds)
+# - no resource limits (avoid OOM during debug)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: api
+          # Override entrypoint with dotnet watch for hot-reload
+          command: ["sh", "-c"]
+          args:
+            - >-
+              dotnet restore API/Homeless.API/Homeless.API.csproj &&
+              dotnet watch --project API/Homeless.API/Homeless.API.csproj run
+              --no-launch-profile --urls http://0.0.0.0:8080
+          workingDir: /src
+
+          env:
+            # Polling watcher for Docker volume mounts
+            - name: DOTNET_USE_POLLING_FILE_WATCHER
+              value: "1"
+            - name: DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER
+              value: "1"
+            - name: DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE
+              value: "false"
+            # Keep secret refs from base (these merge with base env)
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: ConnectionStrings__DefaultConnection
+            - name: ConnectionStrings__ReadConnection
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: ConnectionStrings__ReadConnection
+            - name: SuperAdmin__Email
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: SuperAdmin__Email
+            - name: SuperAdmin__Password
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: SuperAdmin__Password
+            - name: R2__AccountId
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__AccountId
+            - name: R2__AccessKey
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__AccessKey
+            - name: R2__SecretKey
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__SecretKey
+            - name: R2__BucketName
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__BucketName
+            - name: R2__PublicBaseUrl
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__PublicBaseUrl
+
+          # Relaxed probes for debug builds (slower startup)
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 10
+
+          # No resource limits in dev — avoid OOMKill during debug/compilation
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits: {}

@@ -1,0 +1,87 @@
+<div class="mb-6">
+  <a routerLink="/admin"
+     class="mb-4 inline-flex items-center gap-1 text-sm no-underline transition-colors"
+     style="color: #64748b">
+    <i class="pi pi-arrow-left text-xs"></i>
+    Voltar
+  </a>
+  <h1 class="text-xl font-bold" style="color: #1e293b" i18n>Novo Tenant</h1>
+</div>
+
+<form class="space-y-6" (ngSubmit)="save()">
+  <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+    <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n>Dados da Imobiliária</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div>
+        <label for="tenant-name" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Nome *</label>
+        <input id="tenant-name" type="text" required
+               class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+               style="border-color: #e2e8f0; color: #1e293b"
+               [ngModel]="name()" (ngModelChange)="name.set($event)" name="name">
+      </div>
+      <div>
+        <label for="tenant-slug" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Slug *</label>
+        <input id="tenant-slug" type="text" required
+               class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+               style="border-color: #e2e8f0; color: #1e293b"
+               [ngModel]="slug()" (ngModelChange)="slug.set($event)" name="slug"
+               placeholder="ex: minha-imobiliaria">
+      </div>
+      <div>
+        <label for="tenant-email" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>E-mail *</label>
+        <input id="tenant-email" type="email" required
+               class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+               style="border-color: #e2e8f0; color: #1e293b"
+               [ngModel]="contactEmail()" (ngModelChange)="contactEmail.set($event)" name="contactEmail">
+      </div>
+      <div>
+        <label for="tenant-phone" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Telefone</label>
+        <input id="tenant-phone" type="tel"
+               class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+               style="border-color: #e2e8f0; color: #1e293b"
+               [ngModel]="contactPhone()" (ngModelChange)="contactPhone.set($event)" name="contactPhone">
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+    <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n>Configuração</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div>
+        <label for="tenant-domain" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Domínio (DNS)</label>
+        <input id="tenant-domain" type="text"
+               class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+               style="border-color: #e2e8f0; color: #1e293b"
+               [ngModel]="customDomain()" (ngModelChange)="customDomain.set($event)" name="customDomain"
+               placeholder="ex: portal.imobiliaria.com.br">
+        <p class="mt-1 text-xs" style="color: #94a3b8">Opcional. Domínio personalizado do tenant.</p>
+      </div>
+      <div>
+        <label for="tenant-billing" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Primeira Cobrança</label>
+        <input id="tenant-billing" type="date"
+               class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+               style="border-color: #e2e8f0; color: #1e293b"
+               [ngModel]="nextBillingDate()" (ngModelChange)="nextBillingDate.set($event)" name="nextBillingDate">
+        <p class="mt-1 text-xs" style="color: #94a3b8">Opcional. Data do primeiro ciclo de pagamento.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-end gap-3">
+    <a routerLink="/admin"
+       class="rounded-lg border px-5 py-2.5 text-sm font-medium no-underline transition-colors"
+       style="border-color: #e2e8f0; color: #64748b" i18n>
+      Cancelar
+    </a>
+    <button type="submit"
+            class="rounded-lg px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+            style="background: #e11d48"
+            [disabled]="isSaving()" i18n>
+      @if (isSaving()) {
+        <i class="pi pi-spin pi-spinner mr-1"></i>
+      }
+      Criar Tenant
+    </button>
+  </div>
+</form>
+

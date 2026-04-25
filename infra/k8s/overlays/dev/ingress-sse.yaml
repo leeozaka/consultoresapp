@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: consultores-sse
+  namespace: consultores
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - host: consultor.localhost
+      http: &sse-paths
+        paths:
+          - path: /api/tenant/payments/events
+            pathType: Exact
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /api/admin/payments/events
+            pathType: Exact
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+
+    - host: demo.consultor.localhost
+      http: *sse-paths
+
+    - host: acme.consultor.localhost
+      http: *sse-paths

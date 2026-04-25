@@ -1,0 +1,13 @@
+node_modules
+dist
+.angular
+.vscode
+.git
+*.md
+*.spec.ts
+coverage
+k6
+e2e
+.editorconfig
+.gitignore
+tsconfig.spec.json

@@ -1,0 +1,257 @@
+@if (isLoading()) {
+  <div class="flex justify-center py-16">
+    <p class="text-sm" style="color: #94a3b8">Carregando informações do site...</p>
+  </div>
+} @else if (tenant(); as t) {
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold" style="color: #1e293b; font-family: 'DM Sans', sans-serif">Meu Site</h1>
+      <p class="mt-1 text-sm" style="color: #94a3b8">Personalize a aparência e conteúdo do seu portal.</p>
+    </div>
+    @if (!isCustomFrontend() && portalUrl()) {
+      <a [href]="portalUrl()" target="_blank" rel="noopener noreferrer"
+         class="inline-flex items-center gap-1.5 text-sm font-medium no-underline"
+         style="color: var(--brand-primary, #1A73E8)">
+        <i class="pi pi-external-link text-xs"></i>
+        Visitar portal
+      </a>
+    }
+  </div>
+
+  <!--
+    ─── Custom Frontend Banner ─────────────────────────────────────────────────
+  -->
+  @if (isCustomFrontend()) {
+    <div class="mb-4 overflow-hidden rounded-xl border" style="border-color: #bfdbfe; background: #eff6ff">
+      <div class="flex items-center gap-3 border-b px-6 py-4" style="border-color: #bfdbfe">
+        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg"
+             style="background: #dbeafe">
+          <i class="pi pi-code text-sm" style="color: #1d4ed8"></i>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-bold" style="color: #1e40af">Site Personalizado Ativo</h2>
+            <span class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                  style="background: #1d4ed8; color: #ffffff">Custom</span>
+          </div>
+          <p class="mt-0.5 text-xs" style="color: #3b82f6">
+            Este site utiliza um frontend desenvolvido sob medida.
+          </p>
+        </div>
+      </div>
+      <div class="space-y-4 px-6 py-5">
+        @if (customDomain()) {
+          <div>
+            <p class="mb-1 text-xs font-medium" style="color: #1d4ed8">Domínio personalizado</p>
+            <a [href]="'https://' + customDomain()"
+               target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1 text-sm font-medium no-underline"
+               style="color: #1d4ed8">
+              {{ customDomain() }}
+              <i class="pi pi-external-link text-xs"></i>
+            </a>
+          </div>
+        }
+        @if (frontendOrigin()) {
+          <div>
+            <p class="mb-1 text-xs font-medium" style="color: #1d4ed8">Origem do frontend</p>
+            <code class="text-xs" style="color: #1e293b">{{ frontendOrigin() }}</code>
+          </div>
+        }
+        <div class="rounded-lg border p-4" style="border-color: #bfdbfe; background: #dbeafe">
+          <p class="mb-2 text-xs font-semibold" style="color: #1e40af">
+            <i class="pi pi-info-circle mr-1"></i>Alterações requerem suporte técnico
+          </p>
+          <ul class="space-y-1.5 text-xs" style="color: #1d4ed8">
+            <li>• Mudanças visuais no site devem ser solicitadas ao time de desenvolvimento.</li>
+            <li>
+              • <strong>Ao cancelar ou alterar um perk/addon</strong>, notifique o desenvolvedor
+              responsável.
+            </li>
+            <li>• A identidade visual abaixo é usada pelo painel, mas o site pode ter seu próprio design.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Portal URL (non-custom) -->
+  @if (!isCustomFrontend()) {
+    <div class="mb-4 rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <h2 class="mb-3 text-sm font-bold" style="color: #1e293b" i18n>Endereço do Portal</h2>
+      <div class="flex items-center gap-3">
+        <i class="pi pi-globe text-lg" style="color: #94a3b8"></i>
+        <a [href]="portalUrl()" target="_blank" rel="noopener noreferrer"
+           class="text-sm font-medium no-underline break-all"
+           style="color: var(--brand-primary, #1A73E8)">
+          {{ portalUrl() }}
+        </a>
+      </div>
+      @if (!customDomain()) {
+        <p class="mt-2 text-xs" style="color: #94a3b8" i18n>
+          Este é o subdomínio padrão do seu portal. Para usar um domínio próprio, entre em contato com o suporte.
+        </p>
+      }
+    </div>
+  }
+
+  <!-- Theme Selector (platform-hosted portals only) -->
+  @if (!isCustomFrontend()) {
+    <div class="mb-4 rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-sm font-bold" style="color: #1e293b">Tema do Portal</h2>
+        <span class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+              style="background: #f1f5f9; color: #64748b">
+          Ativo: {{ portalTheme() }}
+        </span>
+      </div>
+      <app-theme-selector
+        [currentTheme]="activeTheme()"
+        [allPlans]="allPlans()"
+        [currentPlanId]="tenant()?.planId ?? null"
+        (themeSelected)="onThemeSelected($event)" />
+    </div>
+  }
+
+  <!-- Account Settings -->
+  <div class="mb-4 rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+    <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n>Minha Conta</h2>
+    <form class="space-y-4" (ngSubmit)="saveSettings()">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Nome da Imobiliária</label>
+          <input type="text" required
+                 class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 [ngModel]="editName()" (ngModelChange)="editName.set($event)" name="editName">
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>E-mail de Contato</label>
+          <input type="email" required
+                 class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 [ngModel]="editContactEmail()" (ngModelChange)="editContactEmail.set($event)" name="editContactEmail">
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Telefone</label>
+          <input type="tel"
+                 class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 [ngModel]="editContactPhone()" (ngModelChange)="editContactPhone.set($event)" name="editContactPhone">
+        </div>
+        @if (visibleNextBillingDate()) {
+          <div>
+            <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Próxima Cobrança</label>
+            <p class="rounded-lg border px-3 py-2 text-sm" style="border-color: #e2e8f0; color: #1e293b; background: #f8fafc">
+              {{ visibleNextBillingDate() }}
+            </p>
+          </div>
+        }
+      </div>
+      <div class="flex justify-end">
+        <button type="submit"
+                class="rounded-lg px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+                style="background: var(--brand-primary, #1A73E8)"
+                [disabled]="isSaving()" i18n>
+          @if (isSaving()) {
+            <i class="pi pi-spin pi-spinner mr-1"></i>
+          }
+          Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Plan -->
+  <div class="mb-4 rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+    <h2 class="mb-4 text-sm font-bold" style="color: #1e293b" i18n="@@siteSettings.plan.heading">Plano Atual</h2>
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="flex size-12 shrink-0 items-center justify-center rounded-lg"
+             style="background: color-mix(in srgb, var(--brand-primary, #1A73E8) 12%, transparent)">
+          <i class="pi pi-crown text-xl" style="color: var(--brand-primary, #1A73E8)"></i>
+        </div>
+        <div>
+          <p class="text-base font-bold capitalize" style="color: #1e293b">{{ planLabel() }}</p>
+          @if (currentPlan(); as p) {
+            <p class="mt-0.5 text-xs" style="color: #94a3b8">{{ p.description }}</p>
+          }
+        </div>
+      </div>
+      <a routerLink="/dashboard/plano"
+         class="text-sm font-medium text-purple-600 no-underline hover:text-purple-700"
+         i18n="@@siteSettings.plan.manage">Gerenciar plano</a>
+    </div>
+  </div>
+
+  <!-- Branding + Live Preview (platform-hosted portals only) -->
+  @if (!isCustomFrontend()) {
+    <div class="mb-4 rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-sm font-bold" style="color: #1e293b">Identidade do portal</h2>
+        <span class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+              style="background: #f1f5f9; color: #64748b">
+          Tema: {{ activeTheme() }}
+        </span>
+      </div>
+
+      <div class="grid gap-8 lg:grid-cols-2">
+        <app-branding-form #brandingForm
+          [selectedThemeId]="activeTheme()"
+          [branding]="branding()"
+          [isSaving]="isSavingBranding()"
+          [isUploading]="isUploadingImage()"
+          [uploadError]="uploadError()"
+          (saveBranding)="saveBranding()"
+          (imageSelected)="onPortalImageSelected($event)"
+          (draftChanged)="onDraftChanged($event)" />
+
+        <div>
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wide" style="color: #94a3b8">Pré-visualização ao vivo</p>
+          <app-portal-preview
+            [selectedThemeId]="activeTheme()"
+            [draft]="currentDraft()"
+            [baseTenant]="tenant()" />
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Entitlements -->
+  <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+    <div class="mb-4 flex items-center justify-between">
+      <h2 class="text-sm font-bold" style="color: #1e293b">Funcionalidades Ativas</h2>
+      <a routerLink="/dashboard/perks"
+         class="text-xs font-medium no-underline transition-colors"
+         style="color: var(--brand-primary, #1A73E8)">
+        Ver catálogo →
+      </a>
+    </div>
+    @if (hasEntitlements()) {
+      <div class="space-y-2">
+        @for (entry of entitlements() | keyvalue; track entry.key) {
+          @if (entry.value) {
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-green-500"></i>
+              <span class="text-sm" style="color: #1e293b">{{ entry.key }}</span>
+            </div>
+          }
+        }
+      </div>
+    } @else {
+      <div class="py-6 text-center">
+        <i class="pi pi-star mb-2 block text-2xl" style="color: #cbd5e1"></i>
+        <p class="text-sm" style="color: #94a3b8">Nenhum perk ativo no momento.</p>
+        <a routerLink="/dashboard/perks"
+           class="mt-2 inline-block text-sm font-medium no-underline"
+           style="color: var(--brand-primary, #1A73E8)">
+          Explorar perks disponíveis →
+        </a>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="flex justify-center py-16">
+    <p class="text-sm" style="color: #94a3b8">Não foi possível carregar as informações do site.</p>
+  </div>
+}

@@ -1,0 +1,237 @@
+<form class="space-y-4" (ngSubmit)="onSave()">
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label class="mb-1 block text-xs font-medium" style="color: #64748b">Nome no portal</label>
+      <input type="text" required
+             class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+             style="border-color: #e2e8f0; color: #1e293b"
+             [ngModel]="draftAgencyDisplayName()" (ngModelChange)="draftAgencyDisplayName.set($event)"
+             name="agencyDisplay">
+    </div>
+    <div class="sm:col-span-2">
+      <label class="mb-1 block text-xs font-medium" style="color: #64748b">Tagline</label>
+      <input type="text"
+             class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+             style="border-color: #e2e8f0; color: #1e293b"
+             [ngModel]="draftTagline()" (ngModelChange)="draftTagline.set($event)" name="tagline">
+    </div>
+    <div>
+      <label class="mb-1 block text-xs font-medium" style="color: #64748b">Cor primária</label>
+      <div class="flex items-center gap-2">
+        <input type="color" class="size-10 cursor-pointer rounded border" style="border-color: #e2e8f0"
+               [ngModel]="draftPrimaryColor()" (ngModelChange)="draftPrimaryColor.set($event)" name="pc">
+        <span class="font-mono text-xs" style="color: #94a3b8">{{ draftPrimaryColor() }}</span>
+      </div>
+    </div>
+    <div>
+      <label class="mb-1 block text-xs font-medium" style="color: #64748b">Cor secundária</label>
+      <div class="flex items-center gap-2">
+        <input type="color" class="size-10 cursor-pointer rounded border" style="border-color: #e2e8f0"
+               [ngModel]="draftSecondaryColor()" (ngModelChange)="draftSecondaryColor.set($event)" name="sc">
+        <span class="font-mono text-xs" style="color: #94a3b8">{{ draftSecondaryColor() }}</span>
+      </div>
+    </div>
+    <div class="sm:col-span-2">
+      <label class="mb-1 block text-xs font-medium" style="color: #64748b">URL do logo (opcional)</label>
+      <input type="url"
+             class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+             style="border-color: #e2e8f0; color: #1e293b"
+             [ngModel]="draftLogoUrl()" (ngModelChange)="draftLogoUrl.set($event)" name="logoUrl">
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  @if (fields().heroSection) {
+    <div class="space-y-3 rounded-xl border p-4" style="border-color: #e2e8f0; background: #fafafa">
+      <p class="text-xs font-semibold" style="color: #475569">Conteúdo do hero</p>
+      <div>
+        <label class="mb-1 block text-xs font-medium" style="color: #64748b">Imagem do hero</label>
+        <div class="flex flex-wrap items-center gap-2">
+          <input type="file" accept="image/*" class="text-xs"
+                 [disabled]="isUploading()"
+                 (change)="onImageSelected('hero', $event)">
+          @if (isUploading()) {
+            <span class="text-[10px] font-medium text-slate-500"><i class="pi pi-spin pi-spinner mr-1"></i>Enviando...</span>
+          } @else if (draftHeroImageUrl()) {
+            <span class="text-[10px] text-slate-400 truncate max-w-[200px]">{{ draftHeroImageUrl() }}</span>
+          }
+        </div>
+      </div>
+      <div>
+        <label class="mb-1 block text-xs font-medium" style="color: #64748b">Título do hero</label>
+        <input type="text" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+               style="border-color: #e2e8f0; color: #1e293b"
+               [ngModel]="draftHeroHeadline()" (ngModelChange)="draftHeroHeadline.set($event)" name="hh">
+      </div>
+      <div>
+        <label class="mb-1 block text-xs font-medium" style="color: #64748b">Subtítulo</label>
+        <input type="text" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+               style="border-color: #e2e8f0; color: #1e293b"
+               [ngModel]="draftHeroSubhead()" (ngModelChange)="draftHeroSubhead.set($event)" name="hs">
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b">CTA — texto</label>
+          <input type="text" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 [ngModel]="draftHeroCtaLabel()" (ngModelChange)="draftHeroCtaLabel.set($event)" name="hcl">
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b">CTA — link</label>
+          <input type="url" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 [ngModel]="draftHeroCtaUrl()" (ngModelChange)="draftHeroCtaUrl.set($event)" name="hcu">
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Listing Intro -->
+  @if (fields().listingIntro) {
+    <div class="space-y-3 rounded-xl border p-4" style="border-color: #e2e8f0; background: #fafafa">
+      <p class="text-xs font-semibold" style="color: #475569">Listagem</p>
+      <div>
+        <label class="mb-1 block text-xs font-medium" style="color: #64748b">Texto acima da listagem</label>
+        <textarea rows="2" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                  style="border-color: #e2e8f0; color: #1e293b"
+                  [ngModel]="draftListingIntro()" (ngModelChange)="draftListingIntro.set($event)" name="li"></textarea>
+      </div>
+    </div>
+  }
+
+  <!-- Stats -->
+  @if (fields().stats) {
+    <div class="space-y-3 rounded-xl border p-4" style="border-color: #e2e8f0; background: #fafafa">
+      <p class="text-xs font-semibold" style="color: #475569">Estatísticas (barra de confiança)</p>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b">Estatística 1 — rótulo</label>
+          <input type="text" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 placeholder="Ex: Imóveis"
+                 [ngModel]="draftStat1Label()" (ngModelChange)="draftStat1Label.set($event)" name="s1l">
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b">Estatística 1 — valor</label>
+          <input type="text" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 placeholder="Ex: 500+"
+                 [ngModel]="draftStat1Value()" (ngModelChange)="draftStat1Value.set($event)" name="s1v">
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b">Estatística 2 — rótulo</label>
+          <input type="text" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 placeholder="Ex: Clientes"
+                 [ngModel]="draftStat2Label()" (ngModelChange)="draftStat2Label.set($event)" name="s2l">
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b">Estatística 2 — valor</label>
+          <input type="text" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                 style="border-color: #e2e8f0; color: #1e293b"
+                 placeholder="Ex: 200+"
+                 [ngModel]="draftStat2Value()" (ngModelChange)="draftStat2Value.set($event)" name="s2v">
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Secondary Hero Image -->
+  @if (fields().secondaryHeroImage) {
+    <div class="space-y-3 rounded-xl border p-4" style="border-color: #e2e8f0; background: #fafafa">
+      <p class="text-xs font-semibold" style="color: #475569">Imagem secundária (premium)</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <input type="file" accept="image/*" class="text-xs"
+               [disabled]="isUploading()"
+               (change)="onImageSelected('secondary', $event)">
+        @if (isUploading()) {
+          <span class="text-[10px] font-medium text-slate-500"><i class="pi pi-spin pi-spinner mr-1"></i>Enviando...</span>
+        } @else if (draftSecondaryHeroImageUrl()) {
+          <span class="text-[10px] text-slate-400 truncate max-w-[200px]">{{ draftSecondaryHeroImageUrl() }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Secondary CTA -->
+  @if (fields().heroSecondaryCta) {
+    <div class="space-y-3 rounded-xl border p-4" style="border-color: #e2e8f0; background: #fafafa">
+      <p class="text-xs font-semibold" style="color: #475569">CTA secundário do hero</p>
+      <div>
+        <label class="mb-1 block text-xs font-medium" style="color: #64748b">Texto do botão secundário</label>
+        <input type="text" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+               style="border-color: #e2e8f0; color: #1e293b"
+               placeholder="Ex: Agendar consulta"
+               [ngModel]="draftHeroSecondaryCta()" (ngModelChange)="draftHeroSecondaryCta.set($event)" name="hsc">
+      </div>
+    </div>
+  }
+
+  <!-- Feature Cards -->
+  @if (fields().featureCards) {
+    <div class="space-y-3 rounded-xl border p-4" style="border-color: #e2e8f0; background: #fafafa">
+      <p class="text-xs font-semibold" style="color: #475569">Cards de destaque (3 cards abaixo do hero)</p>
+      @for (idx of [1, 2, 3]; track idx) {
+        <div class="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
+          <p class="text-[10px] font-bold uppercase tracking-wider" style="color: #94a3b8">Card {{ idx }}</p>
+          <div class="grid gap-2 sm:grid-cols-3">
+            <div>
+              <label class="mb-0.5 block text-[10px] font-medium" style="color: #64748b">Ícone</label>
+              <input type="text" class="w-full rounded border px-2 py-1.5 text-xs outline-none"
+                     style="border-color: #e2e8f0; color: #1e293b"
+                     placeholder="home"
+                     [ngModel]="idx === 1 ? draftFeatureCard1Icon() : idx === 2 ? draftFeatureCard2Icon() : draftFeatureCard3Icon()"
+                     (ngModelChange)="idx === 1 ? draftFeatureCard1Icon.set($event) : idx === 2 ? draftFeatureCard2Icon.set($event) : draftFeatureCard3Icon.set($event)"
+                     [name]="'fc' + idx + 'i'">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="mb-0.5 block text-[10px] font-medium" style="color: #64748b">Título</label>
+              <input type="text" class="w-full rounded border px-2 py-1.5 text-xs outline-none"
+                     style="border-color: #e2e8f0; color: #1e293b"
+                     [ngModel]="idx === 1 ? draftFeatureCard1Title() : idx === 2 ? draftFeatureCard2Title() : draftFeatureCard3Title()"
+                     (ngModelChange)="idx === 1 ? draftFeatureCard1Title.set($event) : idx === 2 ? draftFeatureCard2Title.set($event) : draftFeatureCard3Title.set($event)"
+                     [name]="'fc' + idx + 't'">
+            </div>
+          </div>
+          <div>
+            <label class="mb-0.5 block text-[10px] font-medium" style="color: #64748b">Descrição</label>
+            <input type="text" class="w-full rounded border px-2 py-1.5 text-xs outline-none"
+                   style="border-color: #e2e8f0; color: #1e293b"
+                   [ngModel]="idx === 1 ? draftFeatureCard1Description() : idx === 2 ? draftFeatureCard2Description() : draftFeatureCard3Description()"
+                   (ngModelChange)="idx === 1 ? draftFeatureCard1Description.set($event) : idx === 2 ? draftFeatureCard2Description.set($event) : draftFeatureCard3Description.set($event)"
+                   [name]="'fc' + idx + 'd'">
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- WhatsApp -->
+  @if (fields().whatsapp) {
+    <div class="space-y-3 rounded-xl border p-4" style="border-color: #e2e8f0; background: #fafafa">
+      <p class="text-xs font-semibold" style="color: #475569">WhatsApp</p>
+      <div>
+        <label class="mb-1 block text-xs font-medium" style="color: #64748b">Número do WhatsApp (com código do país)</label>
+        <input type="tel" class="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+               style="border-color: #e2e8f0; color: #1e293b"
+               placeholder="+5511999999999"
+               [ngModel]="draftWhatsappNumber()" (ngModelChange)="draftWhatsappNumber.set($event)" name="wn">
+      </div>
+    </div>
+  }
+
+  @if (uploadError()) {
+    <p class="text-xs font-medium" style="color: #dc2626">{{ uploadError() }}</p>
+  }
+  <div class="flex justify-end">
+    <button type="submit"
+            class="rounded-lg px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+            style="background: var(--brand-primary, #1A73E8)"
+            [disabled]="isSaving() || isUploading()">
+      @if (isSaving()) {
+        <i class="pi pi-spin pi-spinner mr-1"></i>
+      }
+      Salvar identidade
+    </button>
+  </div>
+</form>

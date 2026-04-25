@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: consultores-config
+  namespace: consultores-staging
+data:
+  # ── Runtime ──────────────────────────────────────────────────────────────────
+  ASPNETCORE_ENVIRONMENT: "Staging"
+  ASPNETCORE_URLS: "http://+:8080"
+
+  # ── OpenIddict ───────────────────────────────────────────────────────────────
+  OpenIddict__Issuer: "https://api.staging.consultor.app"
+  OpenIddict__SpaRedirectUri: "https://staging.consultor.app/auth/callback"
+  OpenIddict__SpaPostLogoutUri: "https://staging.consultor.app"
+
+  # ── Application ──────────────────────────────────────────────────────────────
+  App__LandingDomain: "staging.consultor.app"
+  App__LandingTenantSlug: "landing"
+  EnableDatabasePurge: "true"
+
+  # ── Payments ────────────────────────────────────────────────────────────────
+  App__SandboxMode: "false"
+
+  # ── Distributed infrastructure ──────────────────────────────────────────────
+  ConnectionStrings__Redis: "redis:6379,abortConnect=false"
+  RabbitMq__Host: "rabbitmq"
+  RabbitMq__Port: "5672"
+  RabbitMq__VirtualHost: "/"
+  RabbitMq__Username: "consultores"
+  RabbitMq__Password: "consultores"
+  RabbitMq__PrefetchCount: "16"
+
+  # ── Seq (disabled — logs go to stdout for K8s aggregation) ───────────────────
+  Seq__ServerUrl: ""
+
+  # ── Caching ──────────────────────────────────────────────────────────────────
+  Caching__PropertyTtlSeconds: "300"
+  Caching__BalanceTtlSeconds: "5"
+  Caching__IdempotencyTtlSeconds: "300"
+  Caching__EntitlementTtlSeconds: "600"
+  Caching__TenantTtlSeconds: "300"
+
+  # ── Concurrency ──────────────────────────────────────────────────────────────
+  Concurrency__LockDefaultTimeoutSeconds: "30"
+  Concurrency__LockEvictionIntervalSeconds: "120"
+  Concurrency__LockMaxIdleSeconds: "300"
+  Concurrency__SagaTimeoutSeconds: "30"
+
+  # ── Resilience (production-like) ─────────────────────────────────────────────
+  Resilience__Default__TimeoutSeconds: "5"
+  Resilience__Default__MaxRetryAttempts: "3"
+  Resilience__Default__RetryDelayMs: "200"
+  Resilience__Default__CircuitBreakerFailureRatio: "0.5"
+  Resilience__Default__CircuitBreakerSamplingDurationSeconds: "30"
+  Resilience__Default__CircuitBreakerMinimumThroughput: "5"
+  Resilience__Default__CircuitBreakerBreakDurationSeconds: "30"
+  Resilience__Database__TimeoutSeconds: "10"
+  Resilience__Database__MaxRetryAttempts: "3"
+  Resilience__Database__RetryDelayMs: "500"
+  Resilience__Database__CircuitBreakerFailureRatio: "0.3"
+  Resilience__Database__CircuitBreakerSamplingDurationSeconds: "60"
+  Resilience__Database__CircuitBreakerMinimumThroughput: "3"
+  Resilience__Database__CircuitBreakerBreakDurationSeconds: "60"

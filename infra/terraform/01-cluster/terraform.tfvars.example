@@ -1,0 +1,50 @@
+# Copy to terraform.tfvars and fill in real values.
+# terraform.tfvars is git-ignored — NEVER commit it.
+
+# ── Required ───────────────────────────────────────────────────────────────────
+
+do_token = "dop_v1_REPLACE_ME"
+
+# ── Profile ────────────────────────────────────────────────────────────────────
+# dev        → 1 CP, 0 workers, API LB on, ingress LB off, no DB, no registry, no DNS (cheapest)
+# staging    → 1 CP + 1 worker, managed DB, registry, DNS, ingress LB
+# production → 3 CP + 2 core workers + 2 dedicated frontend workers (SSR isolation), HA, backups enabled
+
+profile = "dev"
+
+# Individual overrides (leave commented to use profile defaults):
+# control_plane_count = 1
+# worker_count        = 0
+# frontend_worker_count = 0
+# control_plane_size  = "s-1vcpu-2gb"
+# worker_size         = "s-1vcpu-2gb"
+# frontend_worker_size = "s-1vcpu-2gb"
+#
+# Production example with dedicated frontend workers:
+# profile                         = "production"
+# worker_count                    = 2
+# frontend_worker_count           = 2
+# worker_size                     = "s-2vcpu-4gb"
+# frontend_worker_size            = "s-2vcpu-4gb"
+# worker_backups_enabled          = true
+# frontend_worker_backups_enabled = true
+# Frontend workers are intended for the tainted/labeled SSR pool and require
+# at least one core worker pool to remain available.
+
+# ── Region & versions ──────────────────────────────────────────────────────────
+
+region             = "nyc1"
+talos_version      = "v1.9.4"
+kubernetes_version = "1.32.0"
+
+# ── Domain ─────────────────────────────────────────────────────────────────────
+
+domain            = "itcorretor.com"
+letsencrypt_email = "devops@itcorretor.com"
+
+# ── Security ───────────────────────────────────────────────────────────────────
+# Restrict Talos API (50000) and Kubernetes API (6443) to your IPs.
+# Comment out to leave them open (dev only).
+# trusted_cidrs = ["YOUR_IP/32"]
+
+ssh_key_ids = ["DigitalOcean SSH key fingerprint or ID here"]

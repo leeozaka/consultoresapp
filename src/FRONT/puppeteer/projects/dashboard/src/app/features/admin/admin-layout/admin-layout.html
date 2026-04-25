@@ -1,0 +1,9 @@
+<app-sidebar-shell
+  theme="dark"
+  [brand]="brand"
+  [navGroups]="navGroups"
+  [footerNav]="footerNav"
+  [user]="sidebarUser()"
+  (logoutClicked)="logout()">
+  <router-outlet />
+</app-sidebar-shell>

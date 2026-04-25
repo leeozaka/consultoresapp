@@ -1,0 +1,113 @@
+@if (images().length === 0) {
+  <div
+    class="w-full aspect-video bg-surface-100 rounded-xl flex flex-col items-center justify-center gap-2 text-surface-400 text-sm"
+    aria-label="Sem imagens disponíveis"
+    i18n-aria-label="@@imageGallery.empty.ariaLabel"
+  >
+    <svg class="size-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <circle cx="9" cy="9" r="1.5"/>
+      <path d="m21 15-5-5L5 21"/>
+    </svg>
+    <span i18n="@@imageGallery.empty.label">Sem fotos</span>
+  </div>
+} @else {
+  <div class="w-full flex flex-col gap-3" role="region"
+       aria-label="Galeria de imagens"
+       i18n-aria-label="@@imageGallery.region.ariaLabel">
+
+    <!-- Main image — fetched and cached via CachedSrcDirective -->
+    <div class="relative aspect-video rounded-xl overflow-hidden bg-[#0f1629]">
+      @if (currentImage(); as img) {
+        @if (currentImagePending()) {
+          <!-- Server hasn't processed the image yet: show skeleton instead of blank rect -->
+          <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-800/80">
+            <i class="pi pi-spin pi-spinner text-slate-400" style="font-size: 24px" aria-hidden="true"></i>
+            <span class="text-xs text-slate-400"
+                  i18n="@@imageGallery.processing.label">Processando…</span>
+          </div>
+        } @else {
+          <img appCachedSrc
+               [appCachedSrc]="mainUrl(img)"
+               [alt]="altPrefix() + ' ' + (currentIndex() + 1)"
+               class="absolute inset-0 size-full object-cover transition-opacity duration-200" />
+        }
+      }
+
+      @if (hasMultiple()) {
+        <button
+          class="absolute top-1/2 left-3 -translate-y-1/2 z-10 size-10 flex items-center justify-center rounded-full border-0 bg-black/45 text-white backdrop-blur-sm cursor-pointer transition-colors hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          (click)="prev()"
+          i18n-aria-label="@@imageGallery.prev.ariaLabel"
+          aria-label="Imagem anterior"
+        >
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <button
+          class="absolute top-1/2 right-3 -translate-y-1/2 z-10 size-10 flex items-center justify-center rounded-full border-0 bg-black/45 text-white backdrop-blur-sm cursor-pointer transition-colors hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          (click)="next()"
+          i18n-aria-label="@@imageGallery.next.ariaLabel"
+          aria-label="Próxima imagem"
+        >
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+        <!-- Dot indicators -->
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5" role="tablist"
+             i18n-aria-label="@@imageGallery.dots.ariaLabel"
+             aria-label="Imagens">
+          @for (img of images(); track img.key; let i = $index) {
+            <button
+              class="size-2 rounded-full border-0 p-0 cursor-pointer transition-all duration-150"
+              [class]="i === currentIndex() ? 'bg-white scale-125' : 'bg-white/50'"
+              (click)="goTo(i)"
+              role="tab"
+              [attr.aria-selected]="i === currentIndex()"
+              [attr.aria-label]="'Ver imagem ' + (i + 1)"
+            ></button>
+          }
+        </div>
+      }
+    </div>
+
+    <!--
+      Thumbnail strip — deferred until it enters the viewport.
+      The entire strip (and every fetch inside it) is skipped until the user
+      scrolls near it, eliminating off-screen image requests.
+    -->
+    @if (hasMultiple()) {
+      @defer (on viewport) {
+        <div class="flex gap-2 overflow-x-auto [scrollbar-width:thin] pb-1" role="list">
+          @for (img of images(); track img.key; let i = $index) {
+            <button
+              class="relative shrink-0 w-20 h-14 rounded-md overflow-hidden border-2 p-0 bg-surface-200 cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-1"
+              [style.border-color]="thumbBorderColor(i)"
+              [style.outline-color]="'var(--brand-primary)'"
+              (click)="goTo(i)"
+              role="listitem"
+              [attr.aria-label]="altPrefix() + ' ' + (i + 1)"
+            >
+              @if (thumbUrl(img)) {
+                <img appCachedSrc
+                     [appCachedSrc]="thumbUrl(img)"
+                     [alt]="altPrefix() + ' miniatura ' + (i + 1)"
+                     class="absolute inset-0 size-full object-cover" />
+              } @else {
+                <div class="absolute inset-0 flex items-center justify-center bg-slate-700">
+                  <i class="pi pi-spin pi-spinner text-slate-400" style="font-size: 12px" aria-hidden="true"></i>
+                </div>
+              }
+            </button>
+          }
+        </div>
+      } @placeholder {
+        <!-- Reserve layout space — prevents CLS when the strip mounts -->
+        <div class="h-14 w-full rounded" aria-hidden="true"></div>
+      }
+    }
+  </div>
+}

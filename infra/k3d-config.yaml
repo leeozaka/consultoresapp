@@ -1,0 +1,55 @@
+# k3d cluster configuration for local Kubernetes development.
+#
+# Creates a single-node k3s cluster inside Docker with:
+#   - Local container registry at localhost:5050
+#   - NGINX Ingress on ports 80/443 (matches production topology)
+#   - Host path mounts for source code hot-reload via Tilt
+#
+# Usage: k3d cluster create --config infra/k3d-config.yaml
+# Delete: k3d cluster delete consultores-dev
+
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: consultores-dev
+
+servers: 1
+agents: 0
+
+# Disable built-in Traefik — we install NGINX Ingress to match production.
+options:
+  k3s:
+    extraArgs:
+      - arg: --disable=traefik
+        nodeFilters:
+          - server:*
+
+# Map host ports to the k3d load balancer.
+ports:
+  - port: 80:80
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
+    nodeFilters:
+      - loadbalancer
+  # Seq UI accessible at localhost:8888
+  - port: 8888:30088
+    nodeFilters:
+      - loadbalancer
+  # Postgres accessible at localhost:5432 for local tooling (pgAdmin, DataGrip)
+  - port: 5432:30432
+    nodeFilters:
+      - loadbalancer
+
+# Mount project root into the k3s node so Tilt live_update can sync files.
+volumes:
+  - volume: ${PWD}:/src/project
+    nodeFilters:
+      - server:*
+
+# Local registry — images pushed to localhost:5050 are available inside the cluster.
+registries:
+  create:
+    name: consultores-registry
+    host: "0.0.0.0"
+    hostPort: "5050"

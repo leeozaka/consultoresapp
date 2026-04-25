@@ -1,0 +1,161 @@
+<div class="flex flex-col gap-6">
+
+  <!-- ── Uploaded images ──────────────────────────────────────────────────────── -->
+  @if (uploadedImages().length > 0) {
+    <div>
+      <p class="mb-3 text-xs font-semibold" style="color: #475569" i18n="@@photoStagingArea.uploadedLabel">
+        Fotos enviadas
+      </p>
+      <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+        @for (image of uploadedImages(); track image.key) {
+          <div class="group relative aspect-square overflow-hidden rounded-xl bg-slate-100">
+
+            @if (image.isProcessed) {
+              <!-- Processed: show cached thumbnail -->
+              <img appCachedSrc
+                   [appCachedSrc]="image.thumbnailUrl ?? image.mediumUrl ?? image.url"
+                   class="size-full object-cover"
+                   i18n-alt="@@photoStagingArea.uploadedImageAlt"
+                   alt="Foto do imóvel" />
+            } @else {
+              <!-- Still processing on server: show skeleton with spinner -->
+              @if (image.url) {
+                <img appCachedSrc
+                     [appCachedSrc]="image.url"
+                     class="size-full object-cover opacity-60"
+                     i18n-alt="@@photoStagingArea.uploadedImageAlt"
+                     alt="Foto do imóvel" />
+              }
+              <div class="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/30 backdrop-blur-[2px]">
+                <i class="pi pi-spin pi-spinner text-white" style="font-size: 18px" aria-hidden="true"></i>
+                <span class="text-[10px] font-semibold text-white"
+                      i18n="@@photoStagingArea.processingLabel">Processando</span>
+              </div>
+            }
+
+            <!-- Delete button -->
+            <button type="button"
+                    class="absolute top-1 right-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-0 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 disabled:cursor-not-allowed"
+                    style="background: rgba(239,68,68,0.85)"
+                    [disabled]="disabled()"
+                    (click)="onDeleteUploaded(image)"
+                    i18n-aria-label="@@photoStagingArea.deleteAriaLabel"
+                    aria-label="Remover foto">
+              <i class="pi pi-times" style="font-size: 9px" aria-hidden="true"></i>
+            </button>
+
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Drop zone ────────────────────────────────────────────────────────────── -->
+  <div class="relative rounded-xl border-2 border-dashed transition-colors"
+       [class.border-blue-400]="isDraggingOver()"
+       [class.bg-blue-50]="isDraggingOver()"
+       [class.border-slate-300]="!isDraggingOver()"
+       [class.bg-slate-50]="!isDraggingOver()"
+       (dragover)="onDragOver($event)"
+       (dragleave)="onDragLeave()"
+       (drop)="onDrop($event)"
+       role="region"
+       i18n-aria-label="@@photoStagingArea.dropzoneAriaLabel"
+       aria-label="Área para arrastar fotos">
+
+    <input #fileInput
+           type="file"
+           accept="image/*"
+           multiple
+           class="sr-only"
+           [disabled]="disabled()"
+           (change)="onNativeInputChange($event)"
+           i18n-aria-label="@@photoStagingArea.fileInputAriaLabel"
+           aria-label="Selecionar arquivos de imagem" />
+
+    <div class="flex min-h-40 flex-col items-center justify-center gap-3 px-4 py-8 text-center">
+      <i class="pi pi-images text-4xl" style="color: #94a3b8" aria-hidden="true"></i>
+      <div>
+        <p class="text-sm font-semibold" style="color: #1e293b"
+           i18n="@@photoStagingArea.dropzoneTitle">
+          Arraste e solte suas fotos aqui
+        </p>
+        <p class="mt-1 text-xs" style="color: #64748b"
+           i18n="@@photoStagingArea.dropzoneSubtitle">
+          ou clique no botão abaixo para selecionar
+        </p>
+      </div>
+      <button type="button"
+              class="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-xs font-semibold cursor-pointer transition-colors hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              style="border-color: #cbd5e1; color: #475569; background: white"
+              [disabled]="disabled()"
+              (click)="openFilePicker(fileInput)"
+              i18n="@@photoStagingArea.selectButton">
+        <i class="pi pi-plus text-xs" aria-hidden="true"></i>
+        Selecionar fotos
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Staged (pending) files ───────────────────────────────────────────────── -->
+  @if (stagedFiles().length > 0) {
+    <div>
+      <p class="mb-3 text-xs font-semibold" style="color: #475569"
+         i18n="@@photoStagingArea.stagedLabel">
+        Fotos pendentes <span class="ml-1 font-normal" style="color: #94a3b8">(arraste para ordenar)</span>
+      </p>
+
+      <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6"
+           cdkDropList
+           cdkDropListOrientation="mixed"
+           [cdkDropListData]="stagedFiles()"
+           (cdkDropListDropped)="reorderStaged($event)">
+
+        @for (entry of stagedFiles(); track entry.id) {
+          <div class="group relative aspect-square overflow-hidden rounded-xl bg-slate-100 cursor-move"
+               cdkDrag
+               [cdkDragData]="entry">
+
+            <!-- Local preview (object URL — no network, no cache needed) -->
+            <img [src]="entry.previewUrl"
+                 class="size-full object-cover"
+                 [class.opacity-50]="entry.status === 'compressing'"
+                 i18n-alt="@@photoStagingArea.stagedImageAlt"
+                 alt="Pré-visualização da foto" />
+
+            <!-- Status badge -->
+            <div class="absolute bottom-0 inset-x-0 flex items-center justify-center py-1.5"
+                 style="background: linear-gradient(to top, rgba(0,0,0,0.55), transparent)">
+              @if (entry.status === 'compressing') {
+                <span class="flex items-center gap-1 text-[10px] font-semibold text-white">
+                  <i class="pi pi-spin pi-spinner" style="font-size: 9px" aria-hidden="true"></i>
+                  <span i18n="@@photoStagingArea.compressingLabel">Comprimindo</span>
+                </span>
+              } @else {
+                <span class="text-[10px] font-semibold text-white"
+                      i18n="@@photoStagingArea.pendingLabel">Pendente</span>
+              }
+            </div>
+
+            <!-- Drag handle indicator -->
+            <div class="absolute top-1 left-1 opacity-0 transition-opacity group-hover:opacity-100">
+              <i class="pi pi-arrows-alt text-white drop-shadow" style="font-size: 11px" aria-hidden="true"></i>
+            </div>
+
+            <!-- Remove button -->
+            <button type="button"
+                    class="absolute top-1 right-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-0 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                    style="background: rgba(239,68,68,0.85)"
+                    (click)="removeStaged(entry)"
+                    i18n-aria-label="@@photoStagingArea.removeStagedAriaLabel"
+                    aria-label="Remover foto pendente">
+              <i class="pi pi-times" style="font-size: 9px" aria-hidden="true"></i>
+            </button>
+
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+</div>

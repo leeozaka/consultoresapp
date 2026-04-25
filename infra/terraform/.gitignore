@@ -1,0 +1,25 @@
+# Local .terraform directory (downloaded providers & modules)
+.terraform/
+.terraform.lock.hcl
+
+# State files — state is stored remotely in Terraform Cloud
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Sensitive variable files — NEVER commit these
+terraform.tfvars
+*.auto.tfvars
+
+# Generated plan files
+*.tfplan
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Override files (local dev overrides — machine-specific)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

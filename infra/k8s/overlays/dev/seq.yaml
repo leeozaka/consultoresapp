@@ -1,0 +1,54 @@
+# Seq structured log viewer for local development.
+apiVersion: v1
+kind: Service
+metadata:
+  name: seq
+  namespace: consultores
+  labels:
+    app: seq
+spec:
+  selector:
+    app: seq
+  ports:
+    - name: ingestion
+      port: 5341
+      targetPort: 5341
+    - name: ui
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seq
+  namespace: consultores
+  labels:
+    app: seq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seq
+  template:
+    metadata:
+      labels:
+        app: seq
+    spec:
+      containers:
+        - name: seq
+          image: datalust/seq:latest
+          ports:
+            - containerPort: 5341
+            - containerPort: 80
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: SEQ_FIRSTRUN_ADMINPASSWORD
+              value: "admin"
+          volumeMounts:
+            - name: seq-data
+              mountPath: /data
+      volumes:
+        - name: seq-data
+          emptyDir: {}

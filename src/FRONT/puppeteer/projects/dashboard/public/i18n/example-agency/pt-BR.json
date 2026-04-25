@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "home": "Início",
+    "properties": "Imóveis"
+  },
+  "header": {
+    "tagline": "Encontre Seu Próximo Imóvel",
+    "subtitle": "Navegue pelos nossos imóveis exclusivos"
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "lang": {
+    "en": "EN",
+    "ptBR": "PT"
+  },
+  "properties": {
+    "title": "Imóveis",
+    "featured": "Destaques",
+    "all": "Todos os Imóveis",
+    "empty": "Nenhum imóvel disponível no momento.",
+    "loading": "Carregando imóveis...",
+    "sale": "Venda",
+    "rent": "Aluguel",
+    "both": "Venda e Aluguel",
+    "bedrooms_one": "{{count}} qto",
+    "bedrooms_other": "{{count}} qtos",
+    "bathrooms_one": "{{count}} bnh",
+    "bathrooms_other": "{{count}} bnhs",
+    "parking_one": "{{count}} vaga",
+    "parking_other": "{{count}} vagas",
+    "area": "{{count}} m²",
+    "viewDetails": "Ver Detalhes",
+    "filterAll": "Todos",
+    "filterSale": "Venda",
+    "filterRent": "Aluguel"
+  },
+  "detail": {
+    "backToList": "← Todos os Imóveis",
+    "notFound": "Imóvel Não Encontrado",
+    "notFoundMessage": "O imóvel que você procura não existe ou foi removido.",
+    "backHome": "← Voltar ao Início",
+    "description": "Descrição",
+    "details": "Detalhes",
+    "contact": "Contatar Consultor",
+    "whatsapp": "Falar no WhatsApp",
+    "bedrooms": "Quartos",
+    "bathrooms": "Banheiros",
+    "parking": "Vagas",
+    "area": "Área",
+    "type": "Tipo",
+    "listing": "Modalidade",
+    "location": "Localização",
+    "price": "Preço"
+  },
+  "footer": {
+    "rights": "Todos os direitos reservados."
+  },
+  "propertyType": {
+    "House": "Casa",
+    "Apartment": "Apartamento",
+    "Commercial": "Comercial",
+    "Land": "Terreno",
+    "Garage": "Garagem",
+    "Studio": "Studio"
+  },
+  "listingType": {
+    "Sale": "Venda",
+    "Rent": "Aluguel",
+    "Both": "Venda e Aluguel"
+  },
+  "loading": "Carregando...",
+  "error": {
+    "generic": "Algo deu errado. Tente novamente."
+  }
+}

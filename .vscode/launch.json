@@ -1,0 +1,51 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Docker Dev: Frontend (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "preLaunchTask": "docker:dev:up",
+            "url": "http://consultor.localhost",
+            "webRoot": "${workspaceFolder}/src/FRONT/puppeteer"
+        },
+        {
+            "name": "Docker Dev: API Attach (.NET)",
+            "type": "coreclr",
+            "request": "attach",
+            "preLaunchTask": "docker:dev:prepare-debugger",
+            "processId": "${command:pickRemoteProcess}",
+            "pipeTransport": {
+                "pipeProgram": "docker",
+                "pipeArgs": [
+                    "compose",
+                    "--profile",
+                    "default",
+                    "-f",
+                    "docker-compose.yml",
+                    "-f",
+                    "docker-compose.dev.yml",
+                    "exec",
+                    "-T",
+                    "api"
+                ],
+                "debuggerPath": "/root/vsdbg/vsdbg",
+                "pipeCwd": "${workspaceFolder}",
+                "quoteArgs": false
+            },
+            "sourceFileMap": {
+                "/src/API": "${workspaceFolder}/src/API"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Docker Dev: API + Frontend",
+            "configurations": [
+                "Docker Dev: API Attach (.NET)",
+                "Docker Dev: Frontend (Chrome)"
+            ],
+            "stopAll": true
+        }
+    ]
+}

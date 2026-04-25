@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  labels:
+    app: worker
+    app.kubernetes.io/name: worker
+    app.kubernetes.io/component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z rabbitmq 5672; do echo "waiting for rabbitmq..."; sleep 2; done']
+      containers:
+        - name: worker
+          image: consultores-worker:dev
+          imagePullPolicy: IfNotPresent
+
+          envFrom:
+            - configMapRef:
+                name: consultores-config
+
+          env:
+            - name: DOTNET_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: consultores-config
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: ConnectionStrings__DefaultConnection
+            - name: ConnectionStrings__ReadConnection
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: ConnectionStrings__ReadConnection
+            - name: SuperAdmin__Email
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: SuperAdmin__Email
+            - name: SuperAdmin__Password
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: SuperAdmin__Password
+            - name: R2__AccountId
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__AccountId
+            - name: R2__AccessKey
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__AccessKey
+            - name: R2__SecretKey
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__SecretKey
+            - name: R2__BucketName
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__BucketName
+            - name: R2__PublicBaseUrl
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: R2__PublicBaseUrl
+            - name: Stripe__SecretKey
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: Stripe__SecretKey
+                  optional: true
+            - name: Stripe__BaseUrl
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: Stripe__BaseUrl
+                  optional: true
+            - name: Stripe__PublishableKey
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: Stripe__PublishableKey
+                  optional: true
+            - name: Stripe__WebhookSecret
+              valueFrom:
+                secretKeyRef:
+                  name: consultores-secrets
+                  key: Stripe__WebhookSecret
+                  optional: true
+
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+          # The worker is a .NET BackgroundService with no HTTP endpoint.
+          # Use a process check as a lightweight liveness/readiness probe.
+          livenessProbe:
+            exec:
+              command: ["pgrep", "-f", "Homeless.Worker"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["pgrep", "-f", "Homeless.Worker"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+
+      restartPolicy: Always

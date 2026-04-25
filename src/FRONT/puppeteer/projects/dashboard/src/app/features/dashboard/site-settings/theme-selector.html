@@ -1,0 +1,41 @@
+<div class="grid gap-4 sm:grid-cols-3">
+  @for (theme of themes; track theme.id) {
+    <button type="button"
+            class="group relative flex flex-col overflow-hidden rounded-xl border-2 bg-white text-left transition-all cursor-pointer"
+            [class.border-transparent]="currentTheme() !== theme.id && !isThemeLocked(theme)"
+            [class.shadow-sm]="currentTheme() !== theme.id"
+            [class.shadow-lg]="currentTheme() === theme.id"
+            [style.border-color]="currentTheme() === theme.id ? 'var(--brand-primary)' : ''"
+            [disabled]="isThemeLocked(theme)"
+            (click)="selectTheme(theme)">
+      <!-- Preview image -->
+      <div class="relative aspect-[3/2] w-full overflow-hidden bg-slate-100">
+        <img [src]="theme.previewAsset" [alt]="theme.name"
+             class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+             loading="lazy"
+             (error)="$any($event.target).style.display='none'">
+        <!-- Active badge -->
+        @if (currentTheme() === theme.id) {
+          <span class="absolute right-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white"
+                style="background: var(--brand-primary)">
+            Ativo
+          </span>
+        }
+        <!-- Lock overlay -->
+        @if (isThemeLocked(theme)) {
+          <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+            <span class="material-symbols-outlined mb-1 text-3xl text-white/80">lock</span>
+            <span class="text-xs font-semibold text-white/90">
+              Disponível no plano {{ getRequiredPlanName(theme) }}
+            </span>
+          </div>
+        }
+      </div>
+      <!-- Info -->
+      <div class="p-4">
+        <h3 class="text-sm font-bold" style="color: #1e293b">{{ theme.name }}</h3>
+        <p class="mt-1 text-xs leading-relaxed" style="color: #94a3b8">{{ theme.description }}</p>
+      </div>
+    </button>
+  }
+</div>

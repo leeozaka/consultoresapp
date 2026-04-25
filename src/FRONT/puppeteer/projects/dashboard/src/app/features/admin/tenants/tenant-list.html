@@ -1,0 +1,197 @@
+<!-- Header -->
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="text-xl font-bold" style="color: #1e293b" i18n>Tenants</h1>
+    <p class="mt-1 text-sm" style="color: #94a3b8" i18n>
+      Gerencie as imobiliárias cadastradas na plataforma.
+    </p>
+  </div>
+  <a routerLink="/admin/tenants/novo">
+    <p-button icon="pi pi-plus" label="Novo Tenant" severity="danger" />
+  </a>
+</div>
+
+@if (isLoading()) {
+  <div class="flex justify-center py-16">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else {
+  <!-- Stats Cards -->
+  <div class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div class="rounded-xl border bg-white p-4" style="border-color: #e2e8f0">
+      <div class="flex items-center gap-3">
+        <div class="flex size-10 items-center justify-center rounded-lg" style="background: #f0f4ff">
+          <i class="pi pi-building text-lg" style="color: #3b82f6"></i>
+        </div>
+        <div>
+          <p class="text-2xl font-bold" style="color: #1e293b">{{ stats().total }}</p>
+          <p class="text-xs" style="color: #94a3b8" i18n>Total</p>
+        </div>
+      </div>
+    </div>
+    <div class="rounded-xl border bg-white p-4" style="border-color: #e2e8f0">
+      <div class="flex items-center gap-3">
+        <div class="flex size-10 items-center justify-center rounded-lg" style="background: #ecfdf5">
+          <i class="pi pi-check-circle text-lg" style="color: #22c55e"></i>
+        </div>
+        <div>
+          <p class="text-2xl font-bold" style="color: #1e293b">{{ stats().active }}</p>
+          <p class="text-xs" style="color: #94a3b8" i18n>Ativos</p>
+        </div>
+      </div>
+    </div>
+    <div class="rounded-xl border bg-white p-4" style="border-color: #e2e8f0">
+      <div class="flex items-center gap-3">
+        <div class="flex size-10 items-center justify-center rounded-lg" style="background: #fffbeb">
+          <i class="pi pi-clock text-lg" style="color: #f59e0b"></i>
+        </div>
+        <div>
+          <p class="text-2xl font-bold" style="color: #1e293b">{{ stats().pending }}</p>
+          <p class="text-xs" style="color: #94a3b8" i18n>Pendentes</p>
+        </div>
+      </div>
+    </div>
+    <div class="rounded-xl border bg-white p-4" style="border-color: #e2e8f0">
+      <div class="flex items-center gap-3">
+        <div class="flex size-10 items-center justify-center rounded-lg" style="background: #fef2f2">
+          <i class="pi pi-ban text-lg" style="color: #ef4444"></i>
+        </div>
+        <div>
+          <p class="text-2xl font-bold" style="color: #1e293b">{{ stats().suspended }}</p>
+          <p class="text-xs" style="color: #94a3b8" i18n>Suspensos</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <span class="p-input-icon-left">
+      <i class="pi pi-search"></i>
+      <input pInputText
+             type="text"
+             [ngModel]="searchTerm()"
+             (ngModelChange)="searchTerm.set($event)"
+             placeholder="Buscar por nome, slug ou e-mail..."
+             class="w-72" />
+    </span>
+    <p-select [options]="statusOptions"
+              [ngModel]="statusFilter()"
+              (ngModelChange)="statusFilter.set($event)"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Filtrar por status" />
+  </div>
+
+  <!-- Table -->
+  @if (filteredTenants().length > 0) {
+    <p-table [value]="filteredTenants()"
+             [paginator]="filteredTenants().length > 10"
+             [rows]="10"
+             [rowsPerPageOptions]="[10, 25, 50]"
+             [showCurrentPageReport]="true"
+             currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} tenants"
+             styleClass="p-datatable-sm p-datatable-striped"
+             [tableStyle]="{ 'min-width': '60rem' }">
+      <ng-template #header>
+        <tr>
+          <th pSortableColumn="name" i18n>
+            Nome <p-sortIcon field="name" />
+          </th>
+          <th pSortableColumn="slug" i18n>
+            Slug <p-sortIcon field="slug" />
+          </th>
+          <th i18n>E-mail</th>
+          <th i18n>Plano</th>
+          <th pSortableColumn="status" i18n>
+            Status <p-sortIcon field="status" />
+          </th>
+          <th pSortableColumn="createdAt" i18n>
+            Criado em <p-sortIcon field="createdAt" />
+          </th>
+          <th i18n>Ações</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-tenant>
+        <tr>
+          <td>
+            <a [routerLink]="['/admin/tenants', tenant.id]"
+               class="font-medium no-underline" style="color: #1e293b">
+              {{ tenant.name }}
+            </a>
+          </td>
+          <td style="color: #64748b">{{ tenant.slug }}</td>
+          <td style="color: #64748b">{{ tenant.contactEmail }}</td>
+          <td>
+            <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                  style="background: #f0f4ff; color: #3b82f6">
+              {{ tenant.planId ? tenant.portalLayoutMode : 'Sem plano' }}
+            </span>
+          </td>
+          <td>
+            <p-tag [value]="tenant.status | tenantStatus"
+                   [severity]="getStatusSeverity(tenant.status)" />
+          </td>
+          <td style="color: #64748b">
+            {{ tenant.createdAt | date:'dd/MM/yyyy' }}
+          </td>
+          <td>
+            <div class="flex items-center gap-1">
+              <a [routerLink]="['/admin/tenants', tenant.id]">
+                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="Ver detalhes" tooltipPosition="top" />
+              </a>
+              @if (tenant.status === 'Pending') {
+                <p-button icon="pi pi-check"
+                          [rounded]="true"
+                          [text]="true"
+                          severity="success"
+                          size="small"
+                          pTooltip="Aprovar" tooltipPosition="top"
+                          (onClick)="approve(tenant.id, $event)" />
+              }
+              @if (tenant.status === 'Active') {
+                <p-button icon="pi pi-ban"
+                          [rounded]="true"
+                          [text]="true"
+                          severity="danger"
+                          size="small"
+                          pTooltip="Suspender" tooltipPosition="top"
+                          (onClick)="suspend(tenant.id, $event)" />
+              }
+              @if (tenant.status === 'Suspended') {
+                <p-button icon="pi pi-check-circle"
+                          [rounded]="true"
+                          [text]="true"
+                          severity="success"
+                          size="small"
+                          pTooltip="Ativar" tooltipPosition="top"
+                          (onClick)="activate(tenant.id, $event)" />
+              }
+            </div>
+            @if (buildStatus(tenant.id); as status) {
+              <p class="mt-1 text-[11px]" style="color: #64748b">{{ status }}</p>
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="text-center py-8">
+            <i class="pi pi-search mb-2 text-2xl" style="color: #cbd5e1"></i>
+            <p class="text-sm" style="color: #94a3b8" i18n>Nenhum tenant encontrado para os filtros aplicados.</p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  } @else if (tenants().length === 0) {
+    <div class="rounded-xl border bg-white py-16 text-center" style="border-color: #e2e8f0">
+      <i class="pi pi-building mb-4 text-4xl" style="color: #cbd5e1"></i>
+      <p class="text-sm" style="color: #94a3b8" i18n>Nenhum tenant cadastrado.</p>
+    </div>
+  } @else {
+    <div class="rounded-xl border bg-white py-16 text-center" style="border-color: #e2e8f0">
+      <i class="pi pi-search mb-4 text-4xl" style="color: #cbd5e1"></i>
+      <p class="text-sm" style="color: #94a3b8" i18n>Nenhum tenant encontrado para os filtros aplicados.</p>
+    </div>
+  }
+}

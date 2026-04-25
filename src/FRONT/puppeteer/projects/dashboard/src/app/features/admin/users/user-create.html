@@ -1,0 +1,107 @@
+<div class="mb-6">
+  <a routerLink="/admin/users"
+     class="mb-4 inline-flex items-center gap-1 text-sm no-underline transition-colors"
+     style="color: #64748b">
+    <i class="pi pi-arrow-left text-xs"></i>
+    Usuários
+  </a>
+  <h1 class="text-xl font-bold" style="color: #1e293b" i18n>Novo Usuário</h1>
+  <p class="mt-1 text-sm" style="color: #94a3b8" i18n>Crie uma conta e atribua opcionalmente a um tenant.</p>
+</div>
+
+<div class="max-w-2xl rounded-xl border bg-white p-8" style="border-color: #e2e8f0">
+  @if (submitError()) {
+    <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+      {{ submitError() }}
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+    <div class="grid gap-4 md:grid-cols-2">
+      <div>
+        <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>
+          Nome <span style="color: #94a3b8">(opcional)</span>
+        </label>
+        <input type="text" formControlName="firstName"
+               class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+               style="border-color: #e2e8f0; color: #1e293b">
+      </div>
+      <div>
+        <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>
+          Sobrenome <span style="color: #94a3b8">(opcional)</span>
+        </label>
+        <input type="text" formControlName="lastName"
+               class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+               style="border-color: #e2e8f0; color: #1e293b">
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>
+        E-mail <span class="text-red-500">*</span>
+      </label>
+      <input type="email" formControlName="email"
+             class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+             [class.border-red-400]="form.controls.email.invalid && form.controls.email.touched"
+             style="color: #1e293b">
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <p class="mt-1 text-xs" style="color: #dc2626" i18n>E-mail inválido.</p>
+      }
+    </div>
+
+    <div>
+      <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>
+        Senha <span class="text-red-500">*</span>
+      </label>
+      <input type="password" formControlName="password"
+             class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+             [class.border-red-400]="form.controls.password.invalid && form.controls.password.touched"
+             style="color: #1e293b">
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <p class="mt-1 text-xs" style="color: #dc2626" i18n>Senha deve ter no mínimo 8 caracteres.</p>
+      }
+    </div>
+
+    <div class="border-t pt-4" style="border-color: #f1f5f9">
+      <p class="mb-3 text-xs font-medium" style="color: #64748b" i18n>Atribuição (opcional)</p>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Tenant</label>
+          <select formControlName="tenantId"
+                  class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                  style="border-color: #e2e8f0; color: #1e293b">
+            <option value="" i18n>— Sem tenant —</option>
+            @for (t of tenants(); track t.id) {
+              <option [value]="t.id">{{ t.name }} ({{ t.slug }})</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Função</label>
+          <select formControlName="role"
+                  class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+                  style="border-color: #e2e8f0; color: #1e293b">
+            <option value="" i18n>— Sem função —</option>
+            <option value="TenantAdmin">TenantAdmin</option>
+            <option value="Agent">Agent</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2">
+      <a routerLink="/admin/users"
+         class="rounded-lg px-5 py-2 text-sm font-medium no-underline cursor-pointer"
+         style="background: #f1f5f9; color: #475569" i18n>
+        Cancelar
+      </a>
+      <button type="submit"
+              [disabled]="isSubmitting()"
+              class="rounded-lg px-6 py-2 text-sm font-semibold text-white disabled:opacity-50 cursor-pointer"
+              style="background: #7c3aed" i18n>
+        @if (isSubmitting()) { <i class="pi pi-spin pi-spinner mr-1"></i> }
+        Criar Usuário
+      </button>
+    </div>
+  </form>
+</div>

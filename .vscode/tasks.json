@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "docker:dev:up",
+            "type": "shell",
+            "command": "docker compose --profile default -f docker-compose.yml -f docker-compose.dev.yml up --build -d",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "docker:dev:down",
+            "type": "shell",
+            "command": "docker compose --profile default -f docker-compose.yml -f docker-compose.dev.yml down",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "docker:dev:prepare-debugger",
+            "type": "shell",
+            "dependsOn": [
+                "docker:dev:up"
+            ],
+            "command": "docker compose --profile default -f docker-compose.yml -f docker-compose.dev.yml exec -T api sh -c 'if [ ! -x /root/vsdbg/vsdbg ]; then command -v curl >/dev/null 2>&1 || (apt-get update && apt-get install -y curl unzip); curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /root/vsdbg; fi'",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

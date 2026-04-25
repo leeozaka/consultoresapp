@@ -1,0 +1,435 @@
+@if (isLoading()) {
+  <div class="flex justify-center py-16">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else {
+
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-xl font-bold text-surface-900" i18n="@@plan.page.title">Meu Plano & Faturamento</h1>
+    <p class="mt-1 text-sm text-surface-400" i18n="@@plan.page.subtitle">
+      Gerencie sua assinatura, veja perks ativos e acompanhe seus pagamentos.
+    </p>
+  </div>
+
+  <!-- Alerts -->
+  @if (errorMessage()) {
+    <div class="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <i class="pi pi-exclamation-circle mt-0.5 text-red-500"></i>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+  @if (successMessage()) {
+    <div class="mb-5 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+      <i class="pi pi-check-circle mt-0.5 text-green-500"></i>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+
+  <!-- Current Plan Card -->
+  <div class="mb-6 rounded-2xl border-2 border-purple-200 bg-white p-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-purple-100">
+          <i class="pi pi-crown text-2xl text-purple-600"></i>
+        </div>
+        <div>
+          @if (currentPlan(); as plan) {
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-surface-900">{{ plan.name }}</h2>
+              <p-tag [severity]="paymentStatusSeverity()" [value]="paymentStatusLabel()" />
+            </div>
+            <p class="mt-0.5 text-sm text-surface-500">{{ plan.description }}</p>
+          } @else {
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-surface-900" i18n="@@plan.current.none">Sem plano</h2>
+              <p-tag severity="warn" [value]="'Sem assinatura'" />
+            </div>
+            <p class="mt-0.5 text-sm text-surface-500" i18n="@@plan.current.noneDesc">
+              Escolha um plano para desbloquear todos os recursos.
+            </p>
+          }
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        @if (showPayButton()) {
+          <button type="button"
+                  (click)="payNow()"
+                  [disabled]="isPayingNow()"
+                  class="flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-green-700 cursor-pointer disabled:opacity-50">
+            @if (isPayingNow()) {
+              <i class="pi pi-spin pi-spinner text-xs"></i>
+            } @else {
+              <i class="pi pi-credit-card text-xs"></i>
+            }
+            <span i18n="@@plan.action.pay">Pagar agora</span>
+          </button>
+        }
+        @if (canManageBilling()) {
+          <button type="button"
+                  (click)="openBillingPortal()"
+                  [disabled]="isOpeningPortal()"
+                  class="flex items-center gap-2 rounded-xl border border-surface-300 bg-surface-0 px-4 py-2 text-sm font-semibold text-surface-700 transition-all hover:bg-surface-50 cursor-pointer disabled:opacity-50">
+            @if (isOpeningPortal()) {
+              <i class="pi pi-spin pi-spinner text-xs"></i>
+            } @else {
+              <i class="pi pi-external-link text-xs"></i>
+            }
+            <span i18n="@@plan.action.manageBilling">Gerenciar cobrança</span>
+          </button>
+        }
+        <button type="button"
+                (click)="showPlanPicker.set(!showPlanPicker())"
+                class="flex items-center gap-2 rounded-xl border border-purple-300 bg-white px-4 py-2 text-sm font-semibold text-purple-700 transition-all hover:bg-purple-50 cursor-pointer">
+          <i class="pi pi-sync text-xs"></i>
+          <span i18n="@@plan.action.change">Trocar plano</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Billing dates -->
+    @if (currentPlan()) {
+      <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-calendar text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.billing.nextDate">Próxima cobrança</p>
+            <p class="text-sm font-bold text-surface-900">
+              @if (paymentStatus() === 'canceled') {
+                <span class="text-surface-400" i18n="@@plan.billing.noNextCharge">Sem próxima cobrança</span>
+              } @else if (nextBillingDate()) {
+                {{ nextBillingDate() | date: 'dd/MM/yyyy' }}
+              } @else {
+                <span class="text-surface-400" i18n="@@plan.billing.noDate">Não definido</span>
+              }
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-check-circle text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.billing.lastPayment">Último pagamento</p>
+            <p class="text-sm font-bold text-surface-900">
+              @if (lastPaymentDate()) {
+                {{ lastPaymentDate() | date: 'dd/MM/yyyy' }}
+              } @else {
+                <span class="text-surface-400">—</span>
+              }
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-replay text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.billing.subscriptionStatus">Status da assinatura</p>
+            <p class="text-sm font-bold" [class]="hasRecurringPayment() ? 'text-green-600' : 'text-surface-400'">
+              {{ subscriptionStatusLabel() }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-clock text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.billing.accessUntil">Disponível até</p>
+            <p class="text-sm font-bold text-surface-900">
+              @if (availabilityEndsAt()) {
+                {{ availabilityEndsAt() | date: 'dd/MM/yyyy' }}
+              } @else {
+                <span class="text-surface-400" i18n="@@plan.billing.notAvailable">Não definido</span>
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+
+      @if (gracePeriodEndsAt()) {
+        <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span class="font-semibold" i18n="@@plan.billing.graceTitle">Período de tolerância:</span>
+          <span i18n="@@plan.billing.graceBody"> o acesso permanece ativo até </span>
+          <span class="font-semibold">{{ gracePeriodEndsAt() | date: 'dd/MM/yyyy' }}</span>
+          <span i18n="@@plan.billing.graceBodyEnd"> caso o pagamento seja regularizado.</span>
+        </div>
+      }
+    }
+
+    <!-- Plan features -->
+    @if (currentPlan(); as plan) {
+      <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-building text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.feature.properties">Imóveis</p>
+            <p class="text-sm font-bold text-surface-900">
+              {{ plan.maxProperties === 99999 ? 'Ilimitados' : plan.maxProperties }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-video text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.feature.video">Upload de vídeo</p>
+            <p class="text-sm font-bold" [class]="plan.videoUpload ? 'text-green-600' : 'text-surface-400'">
+              {{ plan.videoUpload ? 'Habilitado' : 'Não incluído' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-sparkles text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.feature.ai">Descrições com IA</p>
+            <p class="text-sm font-bold" [class]="plan.aiDescriptions ? 'text-green-600' : 'text-surface-400'">
+              {{ plan.aiDescriptions ? 'Habilitado' : 'Não incluído' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-globe text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.feature.domain">Domínio personalizado</p>
+            <p class="text-sm font-bold" [class]="plan.customDomain ? 'text-green-600' : 'text-surface-400'">
+              {{ plan.customDomain ? 'Habilitado' : 'Não incluído' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 rounded-xl bg-surface-50 px-4 py-3">
+          <i class="pi pi-chart-bar text-surface-400"></i>
+          <div>
+            <p class="text-xs text-surface-400" i18n="@@plan.feature.analytics">Analytics premium</p>
+            <p class="text-sm font-bold" [class]="plan.premiumAnalytics ? 'text-green-600' : 'text-surface-400'">
+              {{ plan.premiumAnalytics ? 'Habilitado' : 'Não incluído' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Plan Picker (toggled) -->
+  @if (showPlanPicker()) {
+    <div class="mb-6">
+      <h3 class="mb-3 text-sm font-bold text-surface-700" i18n="@@plan.picker.title">Planos disponíveis</h3>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        @for (plan of plans(); track plan.id) {
+          <div class="flex flex-col rounded-2xl border-2 bg-white p-5 transition-all duration-200"
+               [class.border-purple-400]="isCurrentPlan(plan)"
+               [class.bg-purple-50]="isCurrentPlan(plan)"
+               [class.border-surface-200]="!isCurrentPlan(plan)">
+
+            @if (isCurrentPlan(plan)) {
+              <span class="mb-2 self-start rounded-full bg-purple-100 px-3 py-0.5 text-xs font-bold text-purple-700" i18n="@@plan.badge.current">
+                Plano Atual
+              </span>
+            }
+
+            <h4 class="text-base font-bold text-surface-900">{{ plan.name }}</h4>
+            <p class="mt-1 mb-3 text-xs text-surface-500">{{ plan.description }}</p>
+
+            <p class="mb-4 text-2xl font-bold text-surface-900">
+              {{ plan.pricePerMonth | currency: plan.currencyCode : 'symbol' : '1.2-2' }}
+              <span class="text-xs font-normal text-surface-400">/mês</span>
+            </p>
+
+            @if (isCurrentPlan(plan)) {
+              <button type="button" disabled
+                      class="mt-auto w-full rounded-xl bg-purple-100 py-2.5 text-sm font-semibold text-purple-600" i18n="@@plan.action.active">
+                Plano Ativo
+              </button>
+            } @else {
+              <button type="button"
+                      (click)="selectPlan(plan)"
+                      [disabled]="isSwitching() !== null"
+                      class="mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-2.5 text-sm font-semibold text-white cursor-pointer transition-opacity hover:opacity-90 disabled:opacity-50">
+                @if (isSwitching() === plan.id) {
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span i18n="@@plan.action.switching">Alterando...</span>
+                } @else {
+                  <span i18n="@@plan.action.select">Escolher</span>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Billing Summary + Active Perks (side by side) -->
+  <div class="mb-6 grid gap-6 lg:grid-cols-2">
+
+    <!-- Monthly billing summary -->
+    <div class="rounded-2xl border border-surface-200 bg-white p-6">
+      <div class="mb-4 flex items-center gap-3">
+        <div class="flex size-10 items-center justify-center rounded-lg bg-blue-100">
+          <i class="pi pi-calculator text-lg text-blue-600"></i>
+        </div>
+        <h3 class="text-sm font-bold text-surface-900" i18n="@@plan.billing.title">Resumo mensal</h3>
+      </div>
+
+      <div class="space-y-3">
+        @if (currentPlan(); as plan) {
+          <div class="flex items-center justify-between rounded-lg bg-surface-50 px-4 py-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-crown text-sm text-purple-500"></i>
+              <span class="text-sm text-surface-700">{{ plan.name }}</span>
+            </div>
+            <span class="text-sm font-bold text-surface-900">
+              {{ plan.pricePerMonth | currency: plan.currencyCode : 'symbol' : '1.2-2' }}
+            </span>
+          </div>
+        }
+
+        <!-- @for (addon of activeAddons(); track addon.id) {
+          <div class="flex items-center justify-between rounded-lg bg-surface-50 px-4 py-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-star text-sm text-amber-500"></i>
+              <span class="text-sm text-surface-700">{{ addon.perkName }}</span>
+            </div>
+            <span class="text-sm font-bold text-surface-900">
+              {{ addon.priceAtActivation / 100 | currency: addon.currencyCode : 'symbol' : '1.2-2' }}
+            </span>
+          </div>
+        } -->
+
+        @if (!currentPlan()
+        //  &&
+        //   activeAddons().length === 0
+          ) {
+          <p class="py-4 text-center text-sm text-surface-400" i18n="@@plan.billing.empty">
+            Nenhuma cobrança ativa.
+          </p>
+        }
+
+        <!-- Total -->
+        <div class="mt-2 flex items-center justify-between border-t border-surface-200 pt-3">
+          <span class="text-sm font-bold text-surface-700" i18n="@@plan.billing.total">Total mensal</span>
+          <span class="text-lg font-bold text-surface-900">
+            {{ totalMonthly() / 100 | currency: (currentPlan()?.currencyCode ?? 'BRL') : 'symbol' : '1.2-2' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active perks -->
+    <!-- <div class="rounded-2xl border border-surface-200 bg-white p-6">
+      <div class="mb-4 flex items-center gap-3">
+        <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100">
+          <i class="pi pi-star text-lg text-amber-600"></i>
+        </div>
+        <h3 class="text-sm font-bold text-surface-900" i18n="@@plan.perks.title">Perks ativos</h3>
+      </div>
+
+      @if (addons().length > 0) {
+        <div class="space-y-3">
+          @for (addon of addons(); track addon.id) {
+            <div class="flex items-center justify-between rounded-lg border border-surface-100 px-4 py-3">
+              <div>
+                <p class="text-sm font-semibold text-surface-900">{{ addon.perkName }}</p>
+                <p class="mt-0.5 text-xs text-surface-400">
+                  <span i18n="@@plan.perks.since">Ativo desde</span> {{ addon.activatedAt | date: 'dd/MM/yyyy' }}
+                </p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-bold text-surface-700">
+                  {{ addon.priceAtActivation / 100 | currency: addon.currencyCode : 'symbol' : '1.2-2' }}<span class="font-normal text-surface-400">/mês</span>
+                </span>
+                <p-tag [severity]="getAddonStatusSeverity(addon.status)"
+                       [value]="getAddonStatusLabel(addon.status)" />
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex flex-col items-center py-8 text-center">
+          <div class="mb-3 flex size-12 items-center justify-center rounded-full bg-surface-50">
+            <i class="pi pi-star text-xl text-surface-300"></i>
+          </div>
+          <p class="text-sm text-surface-500" i18n="@@plan.perks.empty">Nenhum perk ativo.</p>
+          <p class="mt-1 text-xs text-surface-400" i18n="@@plan.perks.emptyHint">
+            Ative perks na página de Perks para turbinar sua imobiliária.
+          </p>
+        </div>
+      }
+    </div> -->
+
+    <div class="rounded-2xl border border-surface-200 bg-white p-6">
+      <div class="mb-4 flex items-center gap-3">
+        <div class="flex size-10 items-center justify-center rounded-lg bg-emerald-100">
+          <i class="pi pi-receipt text-lg text-emerald-600"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-surface-900" i18n="@@plan.transactions.title">Últimas cobranças</h3>
+          <p class="mt-1 text-xs text-surface-400" i18n="@@plan.transactions.subtitle">
+            Histórico recente sincronizado com o Stripe.
+          </p>
+        </div>
+      </div>
+
+      @if (recentTransactions().length > 0) {
+        <div class="space-y-3">
+          @for (transaction of recentTransactions(); track transaction.id) {
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-100 px-4 py-3">
+              <div>
+                <p class="text-sm font-semibold text-surface-900">{{ transaction.description }}</p>
+                <p class="mt-0.5 text-xs text-surface-400">{{ transaction.occurredAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-bold text-surface-900">
+                  {{ transaction.amount / 100 | currency: transaction.currency : 'symbol' : '1.2-2' }}
+                </span>
+                <span class="rounded-full bg-surface-100 px-2.5 py-1 text-xs font-medium text-surface-700">
+                  {{ transactionStatusLabel(transaction.status) }}
+                </span>
+                @if (transaction.hostedInvoiceUrl) {
+                  <a class="text-xs font-semibold text-primary hover:underline"
+                     [href]="transaction.hostedInvoiceUrl"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     i18n="@@plan.transactions.invoiceLink">Ver fatura</a>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex flex-col items-center py-8 text-center">
+          <div class="mb-3 flex size-12 items-center justify-center rounded-full bg-surface-50">
+            <i class="pi pi-receipt text-xl text-surface-300"></i>
+          </div>
+          <p class="text-sm text-surface-500" i18n="@@plan.transactions.empty">Nenhuma cobrança registrada ainda.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Entitlements overview -->
+  <div class="rounded-2xl border border-surface-200 bg-white p-6">
+    <div class="mb-4 flex items-center gap-3">
+      <div class="flex size-10 items-center justify-center rounded-lg bg-green-100">
+        <i class="pi pi-verified text-lg text-green-600"></i>
+      </div>
+      <h3 class="text-sm font-bold text-surface-900" i18n="@@plan.entitlements.title">Recursos habilitados</h3>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      @for (entry of entitlements() | keyvalue; track entry.key) {
+        @if (entry.value) {
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
+            <i class="pi pi-check text-[10px]"></i>
+            {{ entry.key }}
+          </span>
+        }
+      }
+      @if (!hasAnyEntitlement()) {
+        <p class="text-sm text-surface-400" i18n="@@plan.entitlements.empty">Nenhum recurso habilitado ainda.</p>
+      }
+    </div>
+  </div>
+}

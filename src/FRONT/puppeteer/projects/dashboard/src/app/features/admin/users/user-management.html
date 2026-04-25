@@ -1,0 +1,198 @@
+@if (isLoading()) {
+  <div class="flex justify-center py-16">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else {
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-bold" style="color: #1e293b">Usuários</h1>
+      <p class="mt-1 text-sm" style="color: #94a3b8">Gerencie contas e atribua usuários a tenants.</p>
+    </div>
+    <a routerLink="/admin/users/novo"
+       class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white no-underline cursor-pointer"
+       style="background: #7c3aed">
+      <i class="pi pi-plus text-xs"></i>
+      Novo Usuário
+    </a>
+  </div>
+
+  <!-- Filters -->
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <input type="search"
+           [value]="searchQuery()"
+           (input)="searchQuery.set($any($event.target).value)"
+           placeholder="Buscar por nome ou e-mail..."
+           class="rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 min-w-[240px]"
+           style="border-color: #d1d5db; color: #1e293b"
+           i18n-placeholder />
+
+    <select [value]="filterTenantId()"
+            (change)="filterTenantId.set($any($event.target).value)"
+            class="rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+            style="border-color: #d1d5db; color: #1e293b">
+      <option value="">Todos os tenants</option>
+      @for (tenant of tenants(); track tenant.id) {
+        <option [value]="tenant.id">{{ tenant.name }}</option>
+      }
+    </select>
+
+    <select [value]="filterRole()"
+            (change)="filterRole.set($any($event.target).value)"
+            class="rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+            style="border-color: #d1d5db; color: #1e293b">
+      <option value="">Todas as funções</option>
+      <option value="SuperAdmin">SuperAdmin</option>
+      <option value="TenantAdmin">TenantAdmin</option>
+      <option value="Agent">Agent</option>
+    </select>
+
+    <label class="flex items-center gap-2 cursor-pointer select-none text-sm" style="color: #475569">
+      <input type="checkbox"
+             [checked]="filterOrphansOnly()"
+             (change)="filterOrphansOnly.set($any($event.target).checked)"
+             class="size-4 rounded accent-purple-600" />
+      <span i18n>Apenas sem tenant</span>
+    </label>
+  </div>
+
+  <div class="overflow-hidden rounded-xl border bg-white" style="border-color: #e2e8f0">
+    <table class="min-w-full text-sm">
+      <thead>
+        <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc">
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style="color: #64748b" i18n>Usuário</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style="color: #64748b" i18n>Tenant</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style="color: #64748b" i18n>Função</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style="color: #64748b" i18n>Status</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of filteredUsers(); track user.id) {
+          <tr style="border-bottom: 1px solid #f1f5f9">
+            <td class="px-4 py-3">
+              <a [routerLink]="['/admin/users', user.id]"
+                 class="font-medium no-underline" style="color: #1d4ed8">
+                {{ user.firstName }} {{ user.lastName }}
+              </a>
+              <p class="text-xs" style="color: #94a3b8">{{ user.email }}</p>
+            </td>
+            <td class="px-4 py-3">
+              @if (user.tenantId && user.tenantName) {
+                <a [routerLink]="['/admin/tenants', user.tenantId]"
+                   class="text-sm no-underline" style="color: #1d4ed8">
+                  {{ user.tenantName }}
+                </a>
+              } @else {
+                <span class="rounded-full px-2 py-0.5 text-xs font-medium" style="background: #fef3c7; color: #92400e" i18n>Sem tenant</span>
+              }
+            </td>
+            <td class="px-4 py-3">
+              @if (user.roles.length > 0) {
+                <span class="rounded-full px-2 py-0.5 text-xs font-medium" style="background: #ede9fe; color: #5b21b6">
+                  {{ user.roles[0] }}
+                </span>
+              } @else {
+                <span class="text-xs" style="color: #94a3b8" i18n>—</span>
+              }
+            </td>
+            <td class="px-4 py-3">
+              @if (user.isActive) {
+                <span class="rounded-full px-2 py-0.5 text-xs font-medium" style="background: #f0fdf4; color: #16a34a" i18n>Ativo</span>
+              } @else {
+                <span class="rounded-full px-2 py-0.5 text-xs font-medium" style="background: #fef2f2; color: #dc2626" i18n>Inativo</span>
+              }
+            </td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button type="button"
+                        (click)="toggleUserActive(user)"
+                        class="rounded-lg px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors"
+                        [style.background]="user.isActive ? '#fee2e2' : '#dcfce7'"
+                        [style.color]="user.isActive ? '#991b1b' : '#166534'"
+                        i18n>
+                  {{ user.isActive ? 'Desativar' : 'Ativar' }}
+                </button>
+                <button type="button"
+                        (click)="openAssign(user)"
+                        class="rounded-lg px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors"
+                        style="background: #f1f5f9; color: #475569"
+                        i18n>
+                  Atribuir Tenant
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+        @if (filteredUsers().length === 0) {
+          <tr>
+            <td colspan="5" class="py-12 text-center text-sm" style="color: #94a3b8" i18n>
+              Nenhum usuário encontrado.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- Assign dialog -->
+@if (assignTarget(); as user) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
+    <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+      <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-lg font-bold" style="color: #1e293b" i18n>Atribuir Tenant</h2>
+        <button type="button" (click)="closeAssign()" class="rounded-lg p-2 cursor-pointer hover:bg-slate-100">
+          <i class="pi pi-times" style="color: #94a3b8"></i>
+        </button>
+      </div>
+
+      <p class="mb-5 text-sm" style="color: #475569">
+        <span i18n>Atribuindo para:</span>
+        <strong class="ml-1" style="color: #1e293b">{{ user.firstName }} {{ user.lastName }}</strong>
+        ({{ user.email }})
+      </p>
+
+      @if (assignError()) {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ assignError() }}
+        </div>
+      }
+
+      <form [formGroup]="assignForm" (ngSubmit)="onAssign()" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-sm font-medium" style="color: #374151" i18n>Tenant</label>
+          <select formControlName="tenantId"
+                  class="rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  style="border-color: #d1d5db; color: #1e293b">
+            <option value="" disabled i18n>Selecione um tenant...</option>
+            @for (tenant of tenants(); track tenant.id) {
+              <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.slug }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-sm font-medium" style="color: #374151" i18n>Função</label>
+          <select formControlName="role"
+                  class="rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  style="border-color: #d1d5db; color: #1e293b">
+            <option value="TenantAdmin" i18n>TenantAdmin — proprietário da imobiliária</option>
+            <option value="Agent" i18n>Agent — corretor</option>
+          </select>
+        </div>
+
+        <div class="mt-2 flex justify-end gap-3">
+          <button type="button" (click)="closeAssign()"
+                  class="rounded-lg px-4 py-2 text-sm font-medium cursor-pointer"
+                  style="background: #f1f5f9; color: #475569" i18n>Cancelar</button>
+          <button type="submit"
+                  [disabled]="isAssigning() || assignForm.invalid"
+                  class="rounded-lg px-4 py-2 text-sm font-semibold text-white cursor-pointer disabled:opacity-50"
+                  style="background: #7c3aed" i18n>
+            {{ isAssigning() ? 'Atribuindo...' : 'Confirmar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

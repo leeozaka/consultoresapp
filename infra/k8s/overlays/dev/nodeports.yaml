@@ -1,0 +1,38 @@
+# NodePort services for dev — expose Seq UI and Postgres to the host via k3d port mappings.
+# These are only used in the dev overlay; production uses ClusterIP + Ingress for everything.
+
+# Seq UI at localhost:8888 (k3d maps host:8888 → node:30088)
+apiVersion: v1
+kind: Service
+metadata:
+  name: seq-nodeport
+  namespace: consultores
+  labels:
+    app: seq
+spec:
+  type: NodePort
+  selector:
+    app: seq
+  ports:
+    - name: ui
+      port: 80
+      targetPort: 80
+      nodePort: 30088
+---
+# Postgres at localhost:5432 (k3d maps host:5432 → node:30432)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-nodeport
+  namespace: consultores
+  labels:
+    app: postgres
+spec:
+  type: NodePort
+  selector:
+    app: postgres
+  ports:
+    - name: tcp
+      port: 5432
+      targetPort: 5432
+      nodePort: 30432

@@ -1,0 +1,134 @@
+<div class="mb-8">
+  <h1 class="mb-2 text-3xl font-bold tracking-tight" style="color: #0f172a; font-family: 'DM Sans', sans-serif" i18n>
+    Imóveis disponíveis
+  </h1>
+  @if (listingIntro()) {
+    <p class="max-w-2xl text-sm leading-relaxed" style="color: #64748b">{{ listingIntro() }}</p>
+  } @else {
+    <p class="text-sm opacity-70" style="color: #64748b" i18n>
+      Encontre o imóvel ideal com {{ tenantName() }}
+    </p>
+  }
+</div>
+
+<!-- Search — card with soft elevation (listing screen pattern) -->
+<div class="mb-10 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/40">
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label for="location-filter" class="text-xs font-semibold uppercase tracking-wide" style="color: #94a3b8" i18n>Localização</label>
+      <p-autocomplete
+        inputId="location-filter"
+        class="w-full"
+        styleClass="w-full"
+        panelStyleClass="w-full"
+        [suggestions]="groupedSuggestions()"
+        [group]="true"
+        optionGroupLabel="label"
+        optionGroupChildren="items"
+        field="label"
+        (completeMethod)="onSuggestLocations($event)"
+        (onSelect)="onLocationSelect($event)"
+        [ngModel]="searchCity()"
+        (ngModelChange)="searchCity.set($event)"
+        placeholder="Cidade ou bairro"
+        i18n-placeholder>
+        <ng-template #group let-group>
+          <span class="text-xs font-semibold uppercase tracking-wide" style="color: #94a3b8">
+            {{ group.label }}
+          </span>
+        </ng-template>
+      </p-autocomplete>
+    </div>
+
+    <div class="flex flex-wrap items-end gap-3">
+      <div class="flex min-w-[150px] flex-1 flex-col gap-1">
+        <label for="type-filter" class="text-xs font-semibold uppercase tracking-wide" style="color: #94a3b8" i18n>Tipo</label>
+        <p-select
+          inputId="type-filter"
+          [options]="propertyTypeFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="searchType()"
+          (ngModelChange)="searchType.set($event)" />
+      </div>
+      <div class="flex min-w-[150px] flex-1 flex-col gap-1">
+        <label for="listing-filter" class="text-xs font-semibold uppercase tracking-wide" style="color: #94a3b8" i18n>Finalidade</label>
+        <p-select
+          inputId="listing-filter"
+          [options]="listingTypeFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="searchListingType()"
+          (ngModelChange)="searchListingType.set($event)" />
+      </div>
+      <button type="button"
+              class="inline-flex h-10 items-center justify-center rounded-xl px-8 text-sm font-semibold text-white shadow-md transition-all hover:brightness-105 cursor-pointer"
+              style="background: var(--brand-primary, #1A73E8); box-shadow: 0 8px 20px color-mix(in srgb, var(--brand-primary) 35%, transparent)"
+              (click)="search()"
+              i18n>Buscar</button>
+    </div>
+  </div>
+</div>
+
+@if (isLoading()) {
+  <div class="flex justify-center py-20">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else if (properties().length > 0) {
+  <div class="mb-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+    @for (property of properties(); track property.id) {
+      <a [routerLink]="['/imoveis', property.id]"
+         class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white no-underline shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-300/50">
+        <div class="relative aspect-[4/3] overflow-hidden bg-slate-100">
+          @if (property.images.length > 0) {
+            <img appCachedSrc
+                 [appCachedSrc]="property.images[0].mediumUrl ?? property.images[0].url"
+                 [alt]="property.title"
+                 class="size-full object-cover transition-transform duration-500 group-hover:scale-105">
+          } @else {
+            <div class="flex size-full items-center justify-center">
+              <i class="pi pi-image text-4xl opacity-15" style="color: #94a3b8"></i>
+            </div>
+          }
+          <span class="absolute left-3 top-3 rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-md"
+                style="background: var(--brand-primary, #1A73E8)">
+            {{ getListingTypeLabel(property.listingType) }}
+          </span>
+        </div>
+        <div class="flex flex-1 flex-col p-4">
+          <h3 class="mb-1 line-clamp-2 text-base font-bold leading-snug" style="color: #0f172a">
+            {{ property.title }}
+          </h3>
+          <p class="mb-3 flex items-center gap-1 text-xs" style="color: #94a3b8">
+            <i class="pi pi-map-marker text-[10px]"></i>
+            {{ property.city }}
+          </p>
+          <div class="mt-auto flex items-end justify-between gap-2 border-t border-slate-100 pt-3">
+            <app-price-display [price]="property.price" [currency]="property.currency" [listingType]="property.listingType" />
+            <div class="flex flex-wrap items-center justify-end gap-2 text-[11px]" style="color: #94a3b8">
+              @if (property.bedrooms) {
+                <span><i class="pi pi-th-large"></i> {{ property.bedrooms }}</span>
+              }
+              @if (property.areaSqMeters) {
+                <span>{{ property.areaSqMeters }}m²</span>
+              }
+            </div>
+          </div>
+        </div>
+      </a>
+    }
+  </div>
+
+  <app-pagination
+    [totalCount]="totalCount()"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    (pageChange)="onPageChange($event)" />
+} @else {
+  <div class="rounded-2xl border border-dashed border-slate-200 py-20 text-center" style="background: #fafafa">
+    <i class="pi pi-search mb-4 text-4xl opacity-15" style="color: #94a3b8"></i>
+    <p class="text-sm opacity-60" style="color: #64748b" i18n>
+      Nenhum imóvel encontrado com os filtros selecionados.
+    </p>
+  </div>
+}

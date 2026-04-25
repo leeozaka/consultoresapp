@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-acme
+  labels:
+    app: tenant-acme
+    app.kubernetes.io/name: tenant-acme
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tenant-acme
+  template:
+    metadata:
+      labels:
+        app: tenant-acme
+    spec:
+      terminationGracePeriodSeconds: 35
+      containers:
+        - name: tenant-acme
+          image: consultores-tenant-acme:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "4000"
+            - name: SSR_API_ORIGIN
+              value: "http://api:8080"
+            - name: NG_ALLOWED_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: consultores-config
+                  key: NG_ALLOWED_HOSTS
+                  optional: true
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+      restartPolicy: Always

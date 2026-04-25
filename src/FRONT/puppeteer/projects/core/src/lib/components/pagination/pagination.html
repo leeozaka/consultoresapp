@@ -1,0 +1,40 @@
+@if (showPagination()) {
+  <nav aria-label="Paginação" class="flex items-center justify-center gap-1 mt-8">
+    <button
+      class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-transparent bg-transparent text-sm cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-50 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+      [disabled]="!hasPrev()"
+      (click)="prev()"
+      aria-label="Página anterior"
+    >
+      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+
+    @for (p of pages(); track p) {
+      <button
+        class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border text-sm cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+        [class]="p === page()
+          ? 'bg-primary text-primary-contrast border-primary font-semibold'
+          : 'border-transparent bg-transparent hover:bg-primary-50 hover:text-primary'"
+        (click)="goTo(p)"
+        [attr.aria-current]="p === page() ? 'page' : null"
+        [attr.aria-label]="'Página ' + p"
+      >
+        {{ p }}
+      </button>
+    }
+
+    <button
+      class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg border border-transparent bg-transparent text-sm cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-50 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+      [disabled]="!hasNext()"
+      (click)="next()"
+      data-testid="next-page"
+      aria-label="Próxima página"
+    >
+      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </nav>
+}

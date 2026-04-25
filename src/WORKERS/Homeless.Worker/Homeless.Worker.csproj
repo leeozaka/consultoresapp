@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-Homeless.Worker-72d7f5ea-985d-429e-87af-01cc4a222903</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\API\Homeless.Application\Homeless.Application.csproj" />
+    <ProjectReference Include="..\..\API\Homeless.Infrastructure\Homeless.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

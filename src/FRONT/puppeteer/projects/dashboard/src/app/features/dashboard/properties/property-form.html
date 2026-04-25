@@ -1,0 +1,308 @@
+@if (isLoading()) {
+  <div class="flex justify-center py-16">
+    <app-loading-spinner size="lg" />
+  </div>
+} @else {
+  <div class="mb-6">
+    <a routerLink="/dashboard/imoveis"
+       class="mb-4 inline-flex items-center gap-1 text-sm no-underline transition-colors"
+       style="color: #64748b">
+      <i class="pi pi-arrow-left text-xs"></i>
+      Voltar
+    </a>
+    <h1 class="text-xl font-bold" style="color: #1e293b" i18n>
+      @if (isEditMode()) { Editar Imóvel } @else { Novo Imóvel }
+    </h1>
+  </div>
+
+  <div class="lg:flex lg:items-start lg:gap-8">
+    <!-- Form column -->
+    <div class="flex-1 min-w-0">
+      <form class="space-y-6" (ngSubmit)="save()" #propertyForm="ngForm">
+
+        <!-- Basic Info -->
+        <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg" style="background: #eff6ff">
+              <i class="pi pi-info-circle text-sm" style="color: #3b82f6"></i>
+            </span>
+            <h2 class="text-sm font-bold" style="color: #1e293b" i18n>Informações Básicas</h2>
+          </div>
+          <p-fluid>
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="md:col-span-2">
+                <label for="title" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Título *</label>
+                <input pInputText id="title" type="text" required
+                       [ngModel]="title()" (ngModelChange)="title.set($event)" name="title"
+                       #titleRef="ngModel" />
+                @if (titleRef.invalid && titleRef.touched) {
+                  <small class="p-error" i18n>Título é obrigatório.</small>
+                }
+              </div>
+              <div class="md:col-span-2">
+                <label for="description" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Descrição</label>
+                <textarea pTextarea id="description" [autoResize]="true" rows="4"
+                          [ngModel]="description()" (ngModelChange)="description.set($event)" name="description">
+                </textarea>
+                <small class="block text-right" style="color: #94a3b8">{{ description().length }}/2000</small>
+              </div>
+              <div>
+                <label for="propertyType" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Tipo *</label>
+                <p-select id="propertyType" name="propertyType"
+                          [options]="propertyTypeOptions" optionLabel="label" optionValue="value"
+                          [ngModel]="propertyType()" (ngModelChange)="propertyType.set($event)" />
+              </div>
+              <div>
+                <label for="listingType" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Finalidade *</label>
+                <p-select id="listingType" name="listingType"
+                          [options]="listingTypeOptions" optionLabel="label" optionValue="value"
+                          [ngModel]="listingType()" (ngModelChange)="listingType.set($event)" />
+              </div>
+            </div>
+          </p-fluid>
+        </div>
+
+        <!-- Pricing -->
+        <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg" style="background: #f0fdf4">
+              <i class="pi pi-dollar text-sm" style="color: #22c55e"></i>
+            </span>
+            <h2 class="text-sm font-bold" style="color: #1e293b" i18n>Preço</h2>
+          </div>
+          <p-fluid>
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <label for="price" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Valor (R$) *</label>
+                <p-inputnumber id="price" name="price" inputId="price"
+                               mode="currency" currency="BRL" locale="pt-BR" [min]="0"
+                               [ngModel]="price()" (ngModelChange)="price.set($event ?? 0)" />
+              </div>
+            </div>
+          </p-fluid>
+        </div>
+
+        <!-- Location -->
+        <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg" style="background: #fff7ed">
+              <i class="pi pi-map-marker text-sm" style="color: #f97316"></i>
+            </span>
+            <h2 class="text-sm font-bold" style="color: #1e293b" i18n>Localização</h2>
+          </div>
+          <p-fluid>
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <div class="mb-1 flex items-center gap-2">
+                  <label for="zipCode" class="block text-xs font-medium" style="color: #64748b" i18n>CEP</label>
+                  @if (isCepLocked()) {
+                    <button type="button"
+                            class="flex items-center gap-1 text-xs transition-colors"
+                            style="color: #94a3b8"
+                            (click)="isCepLocked.set(false)"
+                            title="Editar endereço manualmente">
+                      <i class="pi pi-pencil text-xs"></i>
+                      <span i18n>Editar</span>
+                    </button>
+                  }
+                </div>
+                <div class="relative">
+                  <p-inputmask id="zipCode" name="zipCode" mask="99999-999"
+                               placeholder="00000-000"
+                               [ngModel]="zipCode()" (ngModelChange)="zipCode.set($event)"
+                               (onComplete)="lookupCep(zipCode())" />
+                  @if (isFetchingCep()) {
+                    <i class="pi pi-spin pi-spinner absolute right-3 top-1/2 -translate-y-1/2 text-sm" style="color: #94a3b8"></i>
+                  }
+                </div>
+              </div>
+              <div>
+                <label for="city" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Cidade *</label>
+                <input pInputText id="city" type="text" required
+                       [ngModel]="city()" (ngModelChange)="city.set($event)" name="city"
+                       [disabled]="isFetchingCep() || isCepLocked()"
+                       #cityRef="ngModel" />
+                @if (cityRef.invalid && cityRef.touched) {
+                  <small class="p-error" i18n>Cidade é obrigatória.</small>
+                }
+              </div>
+              <div>
+                <label for="state" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Estado *</label>
+                <p-select id="state" name="state"
+                          [options]="brazilianStates" optionLabel="label" optionValue="value"
+                          [filter]="true" filterPlaceholder="Buscar estado..."
+                          placeholder="Selecione..."
+                          #stateRef="ngModel" required
+                          [ngModel]="state()" (ngModelChange)="state.set($event)"
+                          [disabled]="isFetchingCep() || isCepLocked()" />
+                @if (stateRef.touched && !state()) {
+                  <small class="p-error" i18n>Estado é obrigatório.</small>
+                }
+              </div>
+              <div>
+                <label for="address" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Endereço</label>
+                <input pInputText id="address" type="text"
+                       [ngModel]="address()" (ngModelChange)="address.set($event)" name="address"
+                       [disabled]="isFetchingCep() || isCepLocked()" />
+              </div>
+              <div>
+                <label for="neighbourhood" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Bairro</label>
+                <input pInputText id="neighbourhood" type="text"
+                       [ngModel]="neighbourhood()" (ngModelChange)="neighbourhood.set($event)" name="neighbourhood"
+                       [disabled]="isFetchingCep() || isCepLocked()" />
+              </div>
+            </div>
+          </p-fluid>
+        </div>
+
+        <!-- Features -->
+        <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg" style="background: #faf5ff">
+              <i class="pi pi-home text-sm" style="color: #a855f7"></i>
+            </span>
+            <h2 class="text-sm font-bold" style="color: #1e293b" i18n>Características</h2>
+          </div>
+          <p-fluid>
+            <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+              <div>
+                <label for="bedrooms" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Quartos *</label>
+                <p-inputnumber id="bedrooms" name="bedrooms" inputId="bedrooms"
+                               [showButtons]="true" buttonLayout="horizontal"
+                               decrementButtonIcon="pi pi-minus" incrementButtonIcon="pi pi-plus"
+                               [min]="0" [max]="20"
+                               [ngModel]="bedrooms()" (ngModelChange)="bedrooms.set($event ?? 0)"
+                               #bedroomsRef="ngModel" required />
+                @if (bedroomsRef.invalid && bedroomsRef.touched) {
+                  <small class="p-error" i18n>Campo obrigatório.</small>
+                }
+              </div>
+              <div>
+                <label for="bathrooms" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Banheiros *</label>
+                <p-inputnumber id="bathrooms" name="bathrooms" inputId="bathrooms"
+                               [showButtons]="true" buttonLayout="horizontal"
+                               decrementButtonIcon="pi pi-minus" incrementButtonIcon="pi pi-plus"
+                               [min]="0" [max]="20"
+                               [ngModel]="bathrooms()" (ngModelChange)="bathrooms.set($event ?? 0)"
+                               #bathroomsRef="ngModel" required />
+                @if (bathroomsRef.invalid && bathroomsRef.touched) {
+                  <small class="p-error" i18n>Campo obrigatório.</small>
+                }
+              </div>
+              <div>
+                <label for="parkingSpaces" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Vagas</label>
+                <p-inputnumber id="parkingSpaces" name="parkingSpaces" inputId="parkingSpaces"
+                               [showButtons]="true" buttonLayout="horizontal"
+                               decrementButtonIcon="pi pi-minus" incrementButtonIcon="pi pi-plus"
+                               [min]="0" [max]="20"
+                               [ngModel]="parkingSpaces()" (ngModelChange)="parkingSpaces.set($event ?? 0)" />
+              </div>
+              <div>
+                <label for="areaSqMeters" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>Área</label>
+                <p-inputnumber id="areaSqMeters" name="areaSqMeters" inputId="areaSqMeters"
+                               suffix=" m²" [min]="0" [maxFractionDigits]="2"
+                               [ngModel]="areaSqMeters()" (ngModelChange)="areaSqMeters.set($event ?? 0)" />
+              </div>
+            </div>
+          </p-fluid>
+        </div>
+
+        <!-- WhatsApp -->
+        <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg" style="background: #dcfce7">
+              <i class="pi pi-whatsapp text-sm" style="color: #25D366"></i>
+            </span>
+            <h2 class="text-sm font-bold" style="color: #1e293b" i18n>Contato WhatsApp</h2>
+          </div>
+          <div class="max-w-sm">
+            <label for="contactPhone" class="mb-1 block text-xs font-medium" style="color: #64748b" i18n>
+              Telefone de contato
+            </label>
+            <p-inputmask id="contactPhone" name="contactPhone"
+                         mask="+55 (99) 99999-9999" placeholder="+55 (11) 99999-9999"
+                         [ngModel]="contactPhone()" (ngModelChange)="contactPhone.set($event)" />
+            <p class="mt-1.5 text-xs" style="color: #94a3b8" i18n>
+              Exibido como botão de WhatsApp na página do imóvel.
+            </p>
+          </div>
+        </div>
+
+        <!-- Photos -->
+        <div class="rounded-xl border bg-white p-6" style="border-color: #e2e8f0">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg" style="background: #f8fafc">
+              <i class="pi pi-images text-sm" style="color: #64748b"></i>
+            </span>
+            <h2 class="text-sm font-bold" style="color: #1e293b" i18n="@@propertyForm.photosSection">Fotos</h2>
+          </div>
+
+          <app-photo-staging-area
+            [uploadedImages]="images()"
+            [disabled]="isUploadingImage() || isSaving()"
+            (filesStaged)="onFilesStaged($event)"
+            (deleteImage)="onDeleteImage($event)" />
+
+          @if (isUploadingImage()) {
+            <p class="mt-4 flex items-center gap-1.5 text-xs" style="color: #64748b">
+              <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+              <span i18n="@@propertyForm.uploadingPhotos">Enviando fotos…</span>
+            </p>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-3">
+          <p-button label="Cancelar" severity="secondary" [outlined]="true" routerLink="/dashboard/imoveis" />
+          <p-button type="submit"
+                    [label]="isEditMode() ? 'Salvar Alterações' : 'Cadastrar Imóvel'"
+                    [loading]="isSaving()"
+                    [disabled]="isSaving()" />
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Preview Sidebar (desktop only) -->
+    <aside class="hidden lg:block lg:w-80 xl:w-96 shrink-0 sticky top-6">
+      <div class="rounded-xl border bg-white overflow-hidden" style="border-color: #e2e8f0">
+        <!-- Image or placeholder -->
+        @if (previewImageUrl()) {
+          <img [src]="previewImageUrl()" alt="Preview" class="h-48 w-full object-cover" />
+        } @else {
+          <div class="flex h-48 w-full items-center justify-center" style="background: #f8fafc">
+            <i class="pi pi-image text-4xl" style="color: #cbd5e1"></i>
+          </div>
+        }
+
+        <div class="p-5 space-y-4">
+          <!-- Title -->
+          <h3 class="text-base font-bold leading-snug" style="color: #1e293b">{{ previewTitle() }}</h3>
+
+          <!-- Location -->
+          <p class="flex items-center gap-1.5 text-sm" style="color: #64748b">
+            <i class="pi pi-map-marker text-xs"></i>
+            {{ previewLocation() }}
+          </p>
+
+          <!-- Price -->
+          <p class="text-xl font-bold" style="color: #1e293b">{{ previewPrice() }}</p>
+
+          <!-- Badges -->
+          <div class="flex flex-wrap gap-2">
+            <p-tag [value]="previewTypeLabel()" severity="secondary" />
+            <p-tag [value]="previewListingLabel()" severity="info" />
+            <p-tag [value]="statusLabels[status()]" [severity]="statusSeverity()" />
+          </div>
+
+          <!-- Publish button (edit mode only) -->
+          @if (isEditMode() && status() === 'Draft') {
+            <p-button label="Publicar (Online)" icon="pi pi-globe" severity="success"
+                      [outlined]="true" styleClass="w-full"
+                      type="button" (onClick)="publishProperty()" />
+          }
+        </div>
+      </div>
+    </aside>
+  </div>
+}

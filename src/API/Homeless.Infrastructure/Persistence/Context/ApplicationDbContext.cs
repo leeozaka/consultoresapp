@@ -45,10 +45,15 @@ public sealed class ApplicationDbContext(
             var methodName = isTenantEntity
                 ? nameof(CreateCombinedFilter)
                 : nameof(CreateSoftDeleteFilter);
-            var method = typeof(ApplicationDbContext)
-                .GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic)!
-                .MakeGenericMethod(entityType.ClrType);
-            var lambda = (LambdaExpression)method.Invoke(this, null)!;
+            const BindingFlags filterMethodFlags =
+                BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic;
+            var methodInfo = typeof(ApplicationDbContext).GetMethod(methodName, filterMethodFlags)!;
+            var genericMethod = methodInfo.MakeGenericMethod(entityType.ClrType);
+            var lambda = (LambdaExpression)(
+                methodInfo.IsStatic
+                    ? genericMethod.Invoke(null, null)!
+                    : genericMethod.Invoke(this, null)!
+            );
             modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
         }
     }

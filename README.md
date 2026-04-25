@@ -125,6 +125,10 @@ just dev
 | Seq | `http://localhost:8888` |
 | Postgres | `localhost:5432` |
 
+Local dev uses **plain HTTP** only (`ingress` has no TLS). Open **`http://consultor.localhost`**. If the browser uses **https** or “HTTPS-Only” mode, you can get **PR_END_OF_FILE** / secure connection errors — switch to **http** or add an exception for `*.localhost`.
+
+The **dev** ingress only routes **`consultor.localhost`** and **`*.consultor.localhost`**. Hostnames like **`itcorretor.com`** are for **production**; if you map them to `127.0.0.1` you will connect to nginx but get the **default 404** (no matching rule).
+
 Useful local commands:
 
 ```bash

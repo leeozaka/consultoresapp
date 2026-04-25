@@ -33,10 +33,15 @@ public sealed class ReadDbContext(
             var methodName = isTenantEntity
                 ? nameof(CreateCombinedFilter)
                 : nameof(CreateSoftDeleteFilter);
-            var method = typeof(ReadDbContext)
-                .GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic)!
-                .MakeGenericMethod(entityType.ClrType);
-            var lambda = (LambdaExpression)method.Invoke(this, null)!;
+            const BindingFlags filterMethodFlags =
+                BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic;
+            var methodInfo = typeof(ReadDbContext).GetMethod(methodName, filterMethodFlags)!;
+            var genericMethod = methodInfo.MakeGenericMethod(entityType.ClrType);
+            var lambda = (LambdaExpression)(
+                methodInfo.IsStatic
+                    ? genericMethod.Invoke(null, null)!
+                    : genericMethod.Invoke(this, null)!
+            );
             modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
         }
     }

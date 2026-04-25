@@ -48,17 +48,24 @@ spec:
           args:
             - postgres
             - -c
-            - max_connections=300
+            - max_connections=200
             - -c
-            - shared_buffers=128MB
+            - shared_buffers=64MB
             - -c
-            - work_mem=8MB
+            - work_mem=4MB
             - -c
-            - effective_cache_size=256MB
+            - effective_cache_size=192MB
             - -c
             - checkpoint_completion_target=0.9
             - -c
-            - wal_buffers=8MB
+            - wal_buffers=4MB
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "768Mi"
           readinessProbe:
             exec:
               command: ["pg_isready", "-U", "postgres"]

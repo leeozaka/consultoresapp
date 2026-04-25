@@ -1,15 +1,17 @@
 @if (devLabel) {
-    <output class="fixed inset-x-0 top-0 flex h-8 w-full items-center justify-center gap-2 px-4 text-xs font-semibold text-white"
-      style="z-index: 2147483647; background: #16a34a; letter-spacing: 0.04em"
+  <div class="flex min-h-screen flex-col">
+    <output
+      class="flex h-8 w-full shrink-0 items-center justify-center gap-2 px-4 text-xs font-semibold text-white"
+      style="background: #16a34a; letter-spacing: 0.04em"
       aria-label="Development environment indicator">
-    <span class="inline-block size-1.5 animate-pulse rounded-full bg-white opacity-75"
-          aria-hidden="true"></span>
-    {{ devLabel }} Environment — Not for production use
-  </output>
-
-  <div class="pt-8 dev-label-offset-root">
-    <router-outlet />
-    <app-toast />
+      <span class="inline-block size-1.5 animate-pulse rounded-full bg-white opacity-75"
+            aria-hidden="true"></span>
+      {{ devLabel }} Environment — Not for production use
+    </output>
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+      <router-outlet />
+      <app-toast />
+    </div>
   </div>
 } @else {
   <router-outlet />

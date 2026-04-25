@@ -41,7 +41,7 @@ setup:
       echo "  + Added $host"
     fi
   done
-  echo "Done. App: http://consultor.localhost (after just k8s-dev-up && just dev)"
+  echo "Done. Use http://consultor.localhost (not https: dev has no TLS; https causes PR_END_OF_FILE in Firefox). Run: just k8s-dev-up && just dev"
 
 # Add extra tenant subdomains: SLUGS="acme beta" just setup-hosts
 setup-hosts: setup

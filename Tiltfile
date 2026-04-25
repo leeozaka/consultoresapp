@@ -58,6 +58,10 @@ docker_build(
 # ── Frontend: shared image build, per-app sync ──────────────────────────────
 # All frontend apps share the same Dockerfile and node_modules. Each app syncs
 # the full workspace so that @consultores/core changes propagate to all apps.
+#
+# Images stop at Dockerfile stage `dev` (deps + sources, no `ng build`). The dev
+# overlay runs one foreground `ng build`, then `ng build --watch` (watch may clear dist/ briefly),
+# waits for server.mjs, then `exec node --watch-path …` (see dashboard patch).
 
 def frontend_app(name):
     """Register a frontend app: Docker image build + Tilt resource."""

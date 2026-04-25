@@ -10,6 +10,7 @@
 
 /* ── Tenant branding tokens (overridden at runtime by BrandingApplierService) ── */
 :root {
+  --dev-environment-banner-height: 0px;
   --brand-primary: #1A73E8;
   --brand-secondary: #F5A623;
   --brand-primary-dark: color-mix(in srgb, var(--brand-primary) 80%, black);

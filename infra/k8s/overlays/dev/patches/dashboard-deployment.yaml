@@ -12,16 +12,17 @@ spec:
           args:
             - >-
               rm -rf /app/.angular/cache /app/dist/dashboard &&
+              npx ng build dashboard --configuration docker-dev &&
               npx ng build dashboard --configuration docker-dev --watch --poll 1000 &
-              until [ -f /app/dist/dashboard/server/server.mjs ]; do sleep 2; done &&
-              node --watch-path /app/dist/dashboard /app/dist/dashboard/server/server.mjs
+              until [ -f /app/dist/dashboard/server/server.mjs ] && [ -d /app/dist/dashboard ]; do sleep 1; done &&
+              exec node --watch-path /app/dist/dashboard /app/dist/dashboard/server/server.mjs
           workingDir: /app
 
           env:
             - name: NODE_ENV
               value: "development"
             - name: NODE_OPTIONS
-              value: "--max-old-space-size=3072"
+              value: "--max-old-space-size=2048"
             - name: PORT
               value: "4000"
             - name: SSR_API_ORIGIN
@@ -31,23 +32,31 @@ spec:
             - name: WATCHPACK_POLLING
               value: "true"
 
+          startupProbe:
+            httpGet:
+              path: /readyz
+              port: 4000
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 180
+
           livenessProbe:
             httpGet:
               path: /healthz
               port: 4000
-            initialDelaySeconds: 300
+            initialDelaySeconds: 30
             periodSeconds: 30
             timeoutSeconds: 10
-            failureThreshold: 10
+            failureThreshold: 6
 
           readinessProbe:
             httpGet:
               path: /readyz
               port: 4000
-            initialDelaySeconds: 30
+            initialDelaySeconds: 5
             periodSeconds: 10
-            timeoutSeconds: 10
-            failureThreshold: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
 
           resources:
             requests:
@@ -55,4 +64,4 @@ spec:
               memory: "1Gi"
             limits:
               cpu: "1500m"
-              memory: "4Gi"
+              memory: "5Gi"

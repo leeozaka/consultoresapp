@@ -1,7 +1,7 @@
 # Patches the base API deployment for local development:
 # - dotnet watch for hot-reload
 # - relaxed probes (longer waits for debug builds)
-# - no resource limits (avoid OOM during debug)
+# - memory limits high enough for restore + watch + Roslyn
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -95,9 +95,10 @@ spec:
             timeoutSeconds: 10
             failureThreshold: 10
 
-          # No resource limits in dev — avoid OOMKill during debug/compilation
           resources:
             requests:
-              cpu: "100m"
-              memory: "256Mi"
-            limits: {}
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
